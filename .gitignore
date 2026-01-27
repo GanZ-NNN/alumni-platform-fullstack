@@ -1,0 +1,23 @@
+# --- System ---
+.DS_Store
+Thumbs.db
+
+# --- Dart / Flutter (Frontend & Backend) ---
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+
+# --- IDE Settings ---
+.vscode/
+.idea/
+*.iml
+
+# --- Docker Data (ຫ້າມເອົາ Database ຂຶ້ນເດັດຂາດ!) ---
+postgres_data/
+
+# --- Environment Secrets ---
+.env

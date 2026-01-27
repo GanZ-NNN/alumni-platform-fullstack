@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: alumni_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: alumni_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # ຕົວຈັດການ Database ຜ່ານ Web (ເຂົ້າຜ່ານ http://localhost:9090)
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 9090:8080
+
+volumes:
+  postgres_data:
