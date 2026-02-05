@@ -1,19 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart' show kIsWeb; // ເຊັກວ່າເປັນ Web ບໍ່
-import 'dart:io' show Platform; // ເຊັກວ່າເປັນ Android ບໍ່
-import '..\\model/models/user_model.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint; // เพิ่ม debugPrint
+import 'dart:io' show Platform; 
+import '../models/user_model.dart';
 
-class AuthService { // ລຶບຄຳວ່າ Mock ອອກ
+class AuthService { 
   
-  // ກຳນົດ URL ຂອງ API
   String get baseUrl {
     if (kIsWeb) {
-      return 'http://localhost:8080'; // ສຳລັບ Web Browser
+      return 'http://localhost:8080'; 
     } else if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8080'; // ສຳລັບ Android Emulator (Localhost ຂອງ Android)
+      return 'http://10.0.2.2:8080'; 
     } else {
-      return 'http://localhost:8080'; // ສຳລັບ iOS / Desktop
+      return 'http://localhost:8080'; 
     }
   }
 
@@ -31,21 +30,70 @@ class AuthService { // ລຶບຄຳວ່າ Mock ອອກ
       );
 
       if (response.statusCode == 200) {
-        // Login ສຳເລັດ! ແປງ JSON ເປັນ UserModel
         final data = jsonDecode(response.body);
-        return UserModel(
-          id: data['id'],
-          email: data['email'],
-          firstName: data['firstName'],
-          role: data['role'],
-        );
+        return UserModel.fromMap(data); 
       } else {
-        print('Login Failed: ${response.body}');
+        // เปลี่ยนจาก print เป็น debugPrint เพื่อลบคำเตือนสีฟ้า
+        debugPrint('Login Failed: ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error: $e');
+      debugPrint('Error: $e');
       return null;
     }
+  }
+
+  Future<bool> register({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String major,
+    required String graduationYear,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password, 
+          'firstName': firstName,
+          'lastName': lastName,
+          'major': major,
+          'graduationYear': graduationYear,
+        }),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Register Error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateProfile(UserModel user) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/users/${user.id}'),
+        headers: {'Content-Type': 'application/json'},
+        // ใช้การ map ข้อมูลเองแบบนี้ หายห่วงเรื่อง Error user.toJson() แน่นอน
+        body: jsonEncode({
+          'firstName': user.firstName,
+          'lastName': user.lastName,
+          'phoneNumber': user.phoneNumber,
+          'major': user.major,
+          'graduationYear': user.graduationYear,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Update Error: $e');
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    await Future.delayed(const Duration(milliseconds: 500)); 
   }
 }
