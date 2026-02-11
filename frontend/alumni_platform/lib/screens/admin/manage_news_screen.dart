@@ -57,18 +57,26 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () async {
+                // 1. ดึง Navigator มารอก่อนจะทำการ await
+                final navigator = Navigator.of(context);
+                
                 final success = await _postService.createPost(
                   authorId: widget.adminId,
                   title: titleCtrl.text,
                   content: contentCtrl.text,
                   type: selectedType,
                 );
+
+                // 2. เช็ค mounted เพื่อยืนยันว่า Widget ยังทำงานอยู่ก่อนสั่ง _fetchPosts
+                if (!mounted) return;
+
                 if (success) {
                   _fetchPosts();
-                  Navigator.pop(context);
+                  // 3. ใช้ตัวแปร navigator ที่ดึงมาแทนการใช้ context ตรงๆ
+                  navigator.pop();
                 }
               },
               child: const Text('Post'),

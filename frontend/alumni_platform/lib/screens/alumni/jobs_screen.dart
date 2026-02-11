@@ -57,9 +57,12 @@ class _JobsScreenState extends State<JobsScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
+              // 1. ดึง Navigator มารอไว้ก่อนที่จะ await
+              final navigator = Navigator.of(context);
+
               final success = await _jobService.postJob(
                 postedBy: widget.currentUser.id,
                 companyName: companyCtrl.text,
@@ -69,9 +72,14 @@ class _JobsScreenState extends State<JobsScreen> {
                 salaryRange: salaryCtrl.text,
                 contactEmail: emailCtrl.text,
               );
+
+              // 2. เช็ค mounted เพื่อความปลอดภัยของ State ก่อนเรียก _fetchJobs
+              if (!mounted) return;
+
               if (success) {
                 _fetchJobs();
-                if (mounted) Navigator.pop(context);
+                // 3. ใช้ตัวแปร navigator ที่ดึงมา แทนการใช้ context ตรงๆ
+                navigator.pop();
               }
             },
             child: const Text('Post'),
@@ -117,7 +125,7 @@ class _JobsScreenState extends State<JobsScreen> {
                         isThreeLine: true,
                         trailing: ElevatedButton(
                           onPressed: () {
-                            // TODO: ເປີດ Email App
+
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact: ${job.contactEmail}')));
                           },
                           style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10)),
