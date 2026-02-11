@@ -4,6 +4,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:postgres/postgres.dart';
+import 'package:dbcrypt/dbcrypt.dart';
 
 late Connection connection;
 
@@ -155,18 +156,85 @@ void main(List<String> args) async {
 
   mainRouter.get('/', (Request req) => Response.ok('Alumni API is Ready!'));
 
-  mainRouter.post('/login', (Request req) async {
-    final body = jsonDecode(await req.readAsString());
-    final result = await connection.execute(Sql.named('SELECT id, email, first_name, last_name, role, status, major, graduation_year, phone_number FROM users WHERE email = @email AND password = @password'), parameters: {'email': body['email'], 'password': body['password']});
-    if (result.isEmpty) return Response.forbidden(jsonEncode({'error': 'Invalid login'}));
-    final row = result.first;
-    return Response.ok(jsonEncode({'id': row[0], 'email': row[1], 'firstName': row[2], 'lastName': row[3], 'role': row[4], 'status': row[5], 'major': row[6], 'graduationYear': row[7], 'phoneNumber': row[8]}), headers: {'Content-Type': 'application/json'});
+mainRouter.post('/login', (Request req) async {
+    try {
+      final body = jsonDecode(await req.readAsString());
+      final email = body['email'];
+      final inputPassword = body['password'];
+
+      print('🔑 Login Attempt: $email'); // Log ເບິ່ງ Email
+      print("DEBUG: email received: '$email'"); // ເບິ່ງວ່າມີຊ່ອງວ່າງທາງໜ້າທາງຫຼັງບໍ່
+      print("DEBUG: password received: '$inputPassword'");
+
+      // 1. 🛑 ດຶງຂໍ້ມູນໂດຍໃຊ້ແຕ່ Email ເທົ່ານັ້ນ (ຫ້າມໃສ່ password ໃນ WHERE)
+      final result = await connection.execute(
+        Sql.named(
+          'SELECT id, email, password, first_name, last_name, role, status, major, graduation_year, phone_number '
+          'FROM users WHERE email = @email'
+        ), 
+        parameters: {'email': email},
+      );
+
+      // 2. ກວດວ່າເຫັນ User ບໍ່?
+      if (result.isEmpty) {
+        print('❌ Login Failed: User not found');
+        return Response.forbidden(jsonEncode({'error': 'User not found'}));
+      }
+
+      final row = result.first;
+      final hashedPasswordInDB = row[2].toString(); // ດຶງ Hash ຈາກ Column ທີ 3 (index 2)
+
+      // 3. 🔥 ກວດສອບລະຫັດຜ່ານດ້ວຍ BCrypt 🔥
+      final isPasswordCorrect = DBCrypt().checkpw(inputPassword, hashedPasswordInDB);
+
+      if (!isPasswordCorrect) {
+        print('❌ Login Failed: Invalid password');
+        return Response.forbidden(jsonEncode({'error': 'Invalid password'}));
+      }
+
+      print('✅ Login Success: ${row[3]}'); // row[3] ແມ່ນ first_name
+
+      // 4. ສົ່ງຂໍ້ມູນກັບໄປໃຫ້ Frontend
+      return Response.ok(jsonEncode({
+        'id': row[0], 
+        'email': row[1], 
+        'firstName': row[3], 
+        'lastName': row[4],
+        'role': row[5], 
+        'status': row[6],
+        'major': row[7],
+        'graduationYear': row[8],
+        'phoneNumber': row[9],
+      }), headers: {'Content-Type': 'application/json'});
+
+    } catch (e) { 
+      print('🔥 Server Error during login: $e');
+      return Response.internalServerError(body: 'Login Error'); 
+    }
   });
 
-  mainRouter.post('/register', (Request req) async {
-    final body = jsonDecode(await req.readAsString());
-    await connection.execute(Sql.named('INSERT INTO users (email, password, first_name, last_name, major, graduation_year, role) VALUES (@email, @password, @firstName, @lastName, @major, @gradYear, @role)'), parameters: {'email': body['email'], 'password': body['password'], 'firstName': body['firstName'], 'lastName': body['lastName'], 'major': body['major'], 'gradYear': body['graduationYear'], 'role': 'alumni'});
-    return Response.ok(jsonEncode({'message': 'Registered'}), headers: {'Content-Type': 'application/json'});
+mainRouter.post('/register', (Request req) async {
+    try {
+      final body = jsonDecode(await req.readAsString());
+      final password = body['password'];
+
+      // 🔥 ເຂົ້າລະຫັດ Password 🔥
+      final hashedPassword = DBCrypt().hashpw(password, DBCrypt().gensalt());
+
+      await connection.execute(
+        Sql.named('INSERT INTO users (email, password, first_name, last_name, major, graduation_year, role) VALUES (@email, @password, @firstName, @lastName, @major, @gradYear, @role)'),
+        parameters: {
+          'email': body['email'],
+          'password': hashedPassword, // ✅ ເກັບຕົວທີ່ເຂົ້າລະຫັດແລ້ວ
+          'firstName': body['firstName'],
+          'lastName': body['lastName'],
+          'major': body['major'],
+          'gradYear': body['graduationYear'],
+          'role': 'alumni'
+        },
+      );
+      return Response.ok(jsonEncode({'message': 'Registered successfully'}));
+    } catch (e) { return Response.internalServerError(body: 'Error: $e'); }
   });
 
   mainRouter.put('/users/<id>', (Request req, String id) async {
