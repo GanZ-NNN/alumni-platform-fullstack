@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../models/post_model.dart';
 import '../../services/post_service.dart';
 
@@ -34,6 +36,7 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
     final titleCtrl = TextEditingController();
     final contentCtrl = TextEditingController();
     String selectedType = 'news';
+    File? selectedImage;
 
     showDialog(
       context: context,
@@ -45,6 +48,25 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
             children: [
               TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Title')),
               TextField(controller: contentCtrl, decoration: const InputDecoration(labelText: 'Content'), maxLines: 3),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final picker = ImagePicker();
+                      final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1200, imageQuality: 80);
+                      if (picked != null) {
+                        selectedImage = File(picked.path);
+                        setDialogState(() {});
+                      }
+                    },
+                    icon: const Icon(Icons.photo),
+                    label: const Text('Pick Image'),
+                  ),
+                  const SizedBox(width: 8),
+                  if (selectedImage != null) const Text('Image selected')
+                ],
+              ),
               DropdownButton<String>(
                 value: selectedType,
                 isExpanded: true,
@@ -67,7 +89,8 @@ TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel'))
                   authorId: widget.adminId,
                   title: titleCtrl.text,
                   content: contentCtrl.text,
-                  type: selectedType,
+                      type: selectedType,
+                      imageFile: selectedImage,
                 );
 
                 // 2. เช็ค mounted เพื่อยืนยันว่า Widget ยังทำงานอยู่ก่อนสั่ง _fetchPosts

@@ -121,4 +121,20 @@ class AdminService {
       return null;
     }
   }
+
+  Future<List<dynamic>> getActivityLogs() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/admin/logs'),
+        headers: _adminHeaders,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Logs Error: $e');
+      return [];
+    }
+  }
 }

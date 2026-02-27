@@ -3,6 +3,7 @@ import '../auth/login_screen.dart';
 import 'manage_users_screen.dart';
 import 'manage_news_screen.dart';
 import 'manage_jobs_screen.dart';
+import 'activity_logs_screen.dart';
 import '../../models/user_model.dart';
 import '../../services/admin_service.dart';
 
@@ -49,7 +50,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       backgroundColor: const Color(0xFFF5F7FB), 
       body: Row(
         children: [
-          // --- 1. SIDEBAR ---
+          // --- 1. SIDEBAR (ສີ Navy ເຂັ້ມ) ---
           Container(
             width: 260,
             color: const Color(0xFF0A121E), 
@@ -69,6 +70,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 
                 _buildSidebarSection('OVERVIEW'),
                 _buildSidebarItem(Icons.dashboard_outlined, 'Dashboard'),
+                _buildSidebarItem(Icons.history_outlined, 'Activity Logs'), // ✅ ຍ້າຍມາໄວ້ Overview
                 
                 _buildSidebarSection('MANAGEMENT'),
                 _buildSidebarItem(Icons.people_alt_outlined, 'Manage Users'),
@@ -110,11 +112,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                 ),
 
-                // --- CONTENT BODY (✅ ຖືກຕ້ອງ: ບໍ່ມີ Scroll ຫຸ້ມບ່ອນນີ້) ---
+                // --- CONTENT BODY (ສະແດງສະເພາະໜ້າທີ່ເລືອກ) ---
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(25),
-                    child: _buildCurrentPage(), 
+                    child: _buildCurrentPage(), // ✅ ໂຕນີ້ຈະ switch ຂໍ້ມູນໃຫ້ເອງ
                   ),
                 ),
               ],
@@ -140,12 +142,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.blue.withValues(alpha:0.1) : Colors.transparent,
+        color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
         onTap: () {
-          setState(() => _selectedMenu = title);
+          setState(() {
+            _selectedMenu = title;
+          });
           if (title == 'Dashboard') _loadStats();
         },
         leading: Icon(icon, color: isSelected ? Colors.blue : Colors.grey[500], size: 22),
@@ -155,20 +159,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
+  // ✅ ຟັງຊັນສຳລັບປ່ຽນໜ້າ
   Widget _buildCurrentPage() {
     switch (_selectedMenu) {
       case 'Manage Users': 
         return ManageUsersScreen(key: ValueKey(_selectedMenu));
       case 'Manage News': 
-        // ໝັ້ນໃຈວ່າ ManageNewsScreen ຂອງເຈົ້າມີການຮັບ adminId
         return ManageNewsScreen(key: ValueKey(_selectedMenu), adminId: widget.adminUser.id);
       case 'Manage Jobs': 
         return ManageJobsScreen(key: ValueKey(_selectedMenu));
+      case 'Activity Logs': 
+        return ActivityLogsScreen(key: ValueKey(_selectedMenu)); 
+      case 'Dashboard':
       default:
-        return _buildDashboardOverview();
+        return _buildDashboardOverview(); // ສະແດງສະຖິຕິສະເພາະໜ້າ Dashboard
     }
   }
 
+  // ✅ ສ່ວນຂອງ Dashboard Overview (Welcome + Stats)
   Widget _buildDashboardOverview() {
     if (_isLoadingStats) return const Center(child: CircularProgressIndicator());
 
@@ -189,13 +197,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
         Expanded(
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
               color: Colors.white, 
               borderRadius: BorderRadius.circular(15),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.02), blurRadius: 10)]
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)]
             ),
-            child: const Center(child: Text("Select a menu to start managing.")),
+            child: const Center(child: Text("Select a menu on the left to start managing.")),
           ),
         )
       ],
@@ -210,7 +217,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         decoration: BoxDecoration(
           color: Colors.white, 
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.03), blurRadius: 10)]
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)]
         ),
         child: Column(
           children: [

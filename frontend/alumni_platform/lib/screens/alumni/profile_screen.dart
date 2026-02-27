@@ -1,7 +1,11 @@
 // lib/screens/alumni/profile_screen.dart
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   final UserModel user; 
@@ -21,6 +25,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   late UserModel currentUser;
   final _authService = AuthService();
+  final _userService = UserService();
 
   @override
   void initState() {
@@ -66,10 +71,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
+              ElevatedButton(
             onPressed: () async {
-              final navigator = Navigator.of(context);
-              final messenger = ScaffoldMessenger.of(context);
 
               // ສ້າງ User Object ໃໝ່ຈາກຂໍ້ມູນທີ່ແກ້
               final updatedUser = UserModel(
@@ -85,9 +88,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
 
               // ຍິງ API
-              final success = await _authService.updateProfile(updatedUser);
 
-              if (!mounted) return;
+              final success = await _authService.updateProfile(updatedUser);
 
               if (success) {
                 setState(() {
@@ -96,11 +98,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 
                 // 2. ເອີ້ນ callback function ເພື່ອສົ່ງຂໍ້ມູນກັບໄປໜ້າ Home
                 widget.onUserUpdated(updatedUser);
-
-                navigator.pop();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Profile Updated!')),
-                );
+                if (!mounted) return;
+                final ctx = context;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Profile Updated!')));
+                });
               }
             },
             child: const Text('Save'),
@@ -118,7 +121,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
+            GestureDetector(
+              onTap: _pickAndUploadImage,
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: (currentUser.profileImageUrl != null && currentUser.profileImageUrl!.isNotEmpty)
+                    ? NetworkImage(currentUser.profileImageUrl!) as ImageProvider
+                    : null,
+                child: (currentUser.profileImageUrl == null || currentUser.profileImageUrl!.isEmpty)
+                    ? const Icon(Icons.person, size: 50)
+                    : null,
+              ),
+            ),
             const SizedBox(height: 20),
             Text('${currentUser.firstName} ${currentUser.lastName ?? ''}',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
@@ -134,11 +148,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
               label: const Text('Edit Profile'),
               style: ElevatedButton.styleFrom(minimumSize: const Size(200, 50)),
             ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: _pickAndUploadImage,
+                icon: const Icon(Icons.photo_camera),
+                label: const Text('Change Avatar'),
+                style: ElevatedButton.styleFrom(minimumSize: const Size(200, 50)),
+              ),
           ],
         ),
       ),
     );
   }
+
+    Future<void> _pickAndUploadImage() async {
+      final picker = ImagePicker();
+        final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024, imageQuality: 85);
+        if (picked == null) return;
+
+        // Web and native platforms require different upload flows
+        String? url;
+        if (kIsWeb) {
+          try {
+            final bytes = await picked.readAsBytes();
+            final fileName = picked.name;
+            url = await _authService.uploadImage(bytes, fileName);
+            if (url != null) {
+              final ok = await _authService.updateAvatar(currentUser.id, url);
+              if (!ok) url = null;
+            }
+          } catch (e) {
+            debugPrint('Web upload error: $e');
+            url = null;
+          }
+        } else {
+          final file = File(picked.path);
+          url = await _userService.uploadAndSetAvatar(file, currentUser.id);
+        }
+
+        if (!mounted) return;
+        final ctx = context;
+        if (url != null) {
+          setState(() {
+            currentUser = UserModel(
+              id: currentUser.id,
+              email: currentUser.email,
+              role: currentUser.role,
+              status: currentUser.status,
+              firstName: currentUser.firstName,
+              lastName: currentUser.lastName,
+              phoneNumber: currentUser.phoneNumber,
+              major: currentUser.major,
+              graduationYear: currentUser.graduationYear,
+              profileImageUrl: url,
+            );
+          });
+          widget.onUserUpdated(currentUser);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Avatar updated')));
+          });
+        } else {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Upload failed')));
+          });
+        }
+    }
 
   Widget _buildInfoTile(IconData icon, String title, String value) {
     return Card(

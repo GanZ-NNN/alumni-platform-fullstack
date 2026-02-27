@@ -8,6 +8,7 @@ class UserModel {
   final String? major;
   final String? graduationYear;
   final String? phoneNumber; // ເພີ່ມອັນນີ້
+  final String? profileImageUrl;
 
   UserModel({
     required this.id,
@@ -19,6 +20,7 @@ class UserModel {
     this.major,
     this.graduationYear,
     this.phoneNumber, // ເພີ່ມ
+    this.profileImageUrl,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> json) {
@@ -31,7 +33,8 @@ class UserModel {
       status: json['status'] ?? 'pending',
       major: json['major'],
       graduationYear: json['graduationYear']?.toString(),
-      phoneNumber: json['phoneNumber'] ?? '', // ເພີ່ມ
+      phoneNumber: json['phoneNumber'] ?? '', 
+      profileImageUrl: json['profileImageUrl'],
     );
   }
 
@@ -46,6 +49,8 @@ class UserModel {
       'status': status,
       'major': major,
       'graduationYear': graduationYear,
+      'phoneNumber': phoneNumber,
+      'profileImageUrl': profileImageUrl,
     };
   }
 }

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/post_model.dart';
 import 'dart:io'; // ສຳລັບ Platform.isAndroid
+import 'user_service.dart';
 
 
 class PostService {
@@ -66,8 +67,16 @@ class PostService {
     required String title,
     required String content,
     required String type,
+    File? imageFile,
   }) async {
     try {
+      String imageUrl = '';
+      if (imageFile != null) {
+        final us = UserService();
+        final uploaded = await us.uploadImage(imageFile);
+        if (uploaded != null) imageUrl = uploaded;
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/admin/posts'),
         headers: _adminHeaders,
@@ -76,7 +85,7 @@ class PostService {
           'title': title,
           'content': content,
           'type': type,
-          'imageUrl': '', 
+          'imageUrl': imageUrl,
         }),
       );
       return response.statusCode == 200;

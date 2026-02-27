@@ -32,6 +32,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = false);
 
+    // 🛑 ໃສ່ບ່ອນນີ້: ກວດສອບຂໍ້ມູນຮູບພາບທີ່ໄດ້ມາຈາກ Backend 🛑
+    if (user != null) {
+      debugPrint('📸 Debug Profile Image URL: ${user.profileImageUrl}');
+    }
+
     // 2. ລໍຖ້າໃຫ້ Keyboard ຫຸບລົງໜ້ອຍໜຶ່ງເພື່ອຄວາມປອດໄພ
     await Future.delayed(const Duration(milliseconds: 200));
 
@@ -39,18 +44,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (user != null) {
       // --- ແຍກສິດ (Role-based Navigation) ---
-      
       if (user.role == 'admin') {
-        // ✅ ໄປໜ້າ Admin Dashboard ແລະ ສົ່ງຂໍ້ມູນ adminUser ໄປນຳ
         Navigator.pushAndRemoveUntil(
           context, 
           MaterialPageRoute(builder: (_) => AdminDashboard(adminUser: user)),
           (route) => false, 
         );
       } else {
-        // --- ສຳລັບ Alumni ---
         if (user.status == 'active') {
-          // ✅ ໄປໜ້າ Alumni Home ແລະ ສົ່ງຂໍ້ມູນ currentUser ໄປນຳ
           Navigator.pushAndRemoveUntil(
             context, 
             MaterialPageRoute(builder: (_) => AlumniHomeScreen(currentUser: user)),
@@ -73,7 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
     } else {
-      // Login ບໍ່ສຳເລັດ
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Login failed! Please check your email and password.'),
