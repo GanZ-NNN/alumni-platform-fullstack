@@ -137,4 +137,19 @@ class AdminService {
       return [];
     }
   }
+
+  Future<List<dynamic>> getMajorReports() async {
+    final res = await http.get(Uri.parse('$baseUrl/admin/reports/majors'), headers: _adminHeaders);
+    return res.statusCode == 200 ? jsonDecode(res.body) : [];
+  }
+
+  Future<List<dynamic>> getYearReports() async {
+    final res = await http.get(Uri.parse('$baseUrl/admin/reports/years'), headers: _adminHeaders);
+    return res.statusCode == 200 ? jsonDecode(res.body) : [];
+  }
+
+  Future<List<dynamic>> getEmploymentReports() async {
+    final res = await http.get(Uri.parse('$baseUrl/admin/reports/employment'), headers: _adminHeaders);
+    return res.statusCode == 200 ? jsonDecode(res.body) : [];
+  }
 }

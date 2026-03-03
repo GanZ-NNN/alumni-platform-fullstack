@@ -8,9 +8,9 @@ import '../models/user_model.dart';
 class AuthService { 
   
   String get baseUrl {
-    if (kIsWeb) return 'http://localhost:8081'; 
-    if (Platform.isAndroid) return 'http://10.0.2.2:8081'; 
-    return 'http://localhost:8081'; 
+    if (kIsWeb) return 'http://localhost:8080'; 
+    if (Platform.isAndroid) return 'http://10.0.2.2:8080'; 
+    return 'http://localhost:8080'; 
   }
 
   // --- 1. ເຂົ້າສູ່ລະບົບ ---
