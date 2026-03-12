@@ -4,9 +4,10 @@ import 'manage_users_screen.dart';
 import 'manage_news_screen.dart';
 import 'manage_jobs_screen.dart';
 import 'activity_logs_screen.dart';
-import 'reports_screen.dart'; // ✅ Import ໜ້າລາຍງານ
+import 'reports_screen.dart'; 
 import '../../models/user_model.dart';
 import '../../services/admin_service.dart';
+import 'manage_notifications_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   final UserModel adminUser;
@@ -77,10 +78,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 _buildSidebarItem(Icons.people_alt_outlined, 'Manage Users'),
                 _buildSidebarItem(Icons.article_outlined, 'Manage News'),
                 _buildSidebarItem(Icons.work_outline, 'Manage Jobs'),
+                _buildSidebarItem(Icons.campaign_outlined, 'Notifications'), 
 
                 // ✅ ໝວດໝູ່ໃໝ່: REPORTS
                 _buildSidebarSection('REPORTS'), 
                 _buildSidebarItem(Icons.analytics_outlined, 'Reports'),
+
+
                 
                 const Spacer(),
                 ListTile(
@@ -174,9 +178,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 'Manage Jobs': 
         return ManageJobsScreen(key: ValueKey(_selectedMenu));
       case 'Activity Logs': 
-        return ActivityLogsScreen(key: ValueKey(_selectedMenu)); 
+        return ActivityLogsScreen(key: ValueKey(_selectedMenu));
+      case 'Notifications': 
+        return const ManageNotificationsScreen(key: ValueKey('Notifications'));
       case 'Reports': 
-        return ReportsScreen(key: ValueKey(_selectedMenu)); // ✅ ສະແດງໜ້າລາຍງານ
+        return ReportsScreen(key: ValueKey(_selectedMenu)); 
+        
       case 'Dashboard':
       default:
         return _buildDashboardOverview(); 

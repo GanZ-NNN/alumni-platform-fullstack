@@ -6,7 +6,8 @@ import '../../services/post_service.dart';
 import '../auth/login_screen.dart';
 import 'profile_screen.dart';
 import 'directory_screen.dart';
-import 'jobs_screen.dart'; // ✅ 1. Import ໜ້າ Jobs
+import 'jobs_screen.dart';
+import 'notification_list_screen.dart';
 
 class AlumniHomeScreen extends StatefulWidget {
   final UserModel currentUser;
@@ -64,44 +65,60 @@ class _AlumniHomeScreenState extends State<AlumniHomeScreen> {
                     itemBuilder: (context, index) {
                       final post = _posts[index];
                       return Card(
-                        margin: const EdgeInsets.all(10),
-                        elevation: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: post.type == 'event' ? Colors.orange : Colors.blue,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(4), 
-                                  bottomRight: Radius.circular(10)
+                      margin: const EdgeInsets.all(10),
+                      elevation: 3,
+                      clipBehavior: Clip.antiAlias, // ເຮັດໃຫ້ຮູບມົນຕາມຂອບ Card
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // ✅ 1. ສ່ວນສະແດງຮູບພາບ (ເພີ່ມໃໝ່) ✅
+                          if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
+                            Image.network(
+                              post.imageUrl!,
+                              width: double.infinity,
+                              height: 200, // ກຳນົດຄວາມສູງຕາມໃຈ
+                              fit: BoxFit.cover, // ໃຫ້ຮູບເຕັມພື້ນທີ່
+                              errorBuilder: (context, error, stackTrace) {
+                                // ຖ້າໂຫຼດຮູບບໍ່ໄດ້ (ເຊັ່ນ URL ເສຍ) ໃຫ້ບໍ່ໂຊຫຍັງ ຫຼື ໂຊ Placeholder
+                                return const SizedBox.shrink();
+                              },
+                            ),
+
+                          // ສ່ວນປ້າຍປະເພດ (NEWS/EVENT)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: post.type == 'event' ? Colors.orange : Colors.blue,
+                              borderRadius: const BorderRadius.only(
+                                // ປັບໃຫ້ມົນສະເພາະເບື້ອງລຸ່ມ ຖ້າມີຮູບຢູ່ເທິງ
+                                bottomRight: Radius.circular(10) 
+                              ),
+                            ),
+                            child: Text(
+                              post.type.toUpperCase(), 
+                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)
+                            ),
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(post.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                const SizedBox(height: 5),
+                                Text(post.content, style: const TextStyle(color: Colors.black87)),
+                                const SizedBox(height: 10),
+                                Text(
+                                  'Post Date: ${post.createdAt.length > 10 ? post.createdAt.substring(0, 10) : post.createdAt}',
+                                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                                 ),
-                              ),
-                              child: Text(
-                                post.type.toUpperCase(), 
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)
-                              ),
+                              ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(post.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                  const SizedBox(height: 5),
-                                  Text(post.content, style: const TextStyle(color: Colors.black87)),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    'Post Date: ${post.createdAt.length > 10 ? post.createdAt.substring(0, 10) : post.createdAt}',
-                                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                          ),
+                        ],
+                      ),
+                    );
                     },
                   ),
       ),
@@ -129,7 +146,14 @@ class _AlumniHomeScreenState extends State<AlumniHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(titles[_currentIndex]), // ປ່ຽນ Title ຕາມໜ້າ
+        
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationListScreen()));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',

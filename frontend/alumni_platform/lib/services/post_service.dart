@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/post_model.dart';
 import 'dart:io'; // ສຳລັບ Platform.isAndroid
-import 'user_service.dart';
 
 
 class PostService {
@@ -62,21 +61,15 @@ class PostService {
   }
 
   // ຟັງຊັນສ້າງໂພສໃໝ່ (Admin)
+// ✅ ແກ້ໄຂຟັງຊັນ createPost ໃຫ້ຮັບ imageUrl
   Future<bool> createPost({
     required int authorId,
     required String title,
     required String content,
     required String type,
-    File? imageFile,
+    String? imageUrl, // 🛑 ເພີ່ມແຖວນີ້ເພື່ອຮັບ URL ຮູບ 🛑
   }) async {
     try {
-      String imageUrl = '';
-      if (imageFile != null) {
-        final us = UserService();
-        final uploaded = await us.uploadImage(imageFile);
-        if (uploaded != null) imageUrl = uploaded;
-      }
-
       final response = await http.post(
         Uri.parse('$baseUrl/admin/posts'),
         headers: _adminHeaders,
@@ -85,7 +78,7 @@ class PostService {
           'title': title,
           'content': content,
           'type': type,
-          'imageUrl': imageUrl,
+          'imageUrl': imageUrl ?? '', // 🛑 ສົ່ງ URL ນີ້ໄປຫາ Backend 🛑
         }),
       );
       return response.statusCode == 200;
@@ -105,6 +98,32 @@ class PostService {
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error deletePost: $e');
+      return false;
+    }
+  }
+
+  // ແກ້ໄຂໂພສ (Admin)
+  Future<bool> updatePost({
+    required int id,
+    required String title,
+    required String content,
+    required String type,
+    String? imageUrl,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/admin/posts/$id'),
+        headers: _adminHeaders,
+        body: jsonEncode({
+          'title': title,
+          'content': content,
+          'type': type,
+          'imageUrl': imageUrl ?? '',
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error updatePost: $e');
       return false;
     }
   }

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:typed_data'; // ສໍາລັບ Uint8List
+import 'dart:typed_data'; 
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'dart:io' show Platform; 
@@ -57,7 +57,7 @@ class AuthService {
     }
   }
 
-  // --- 3. ອັບເດດຂໍ້ມູນທົ່ວໄປ (ລວມເບີໂທ) ---
+  // --- 3. ອັບເດດຂໍ້ມູນໂປຣໄຟລ໌ (✅ ອັບເດດເພື່ອຮອງຮັບຂໍ້ມູນວຽກເຮັດ) ---
   Future<bool> updateProfile(UserModel user) async {
     try {
       final response = await http.put(
@@ -66,12 +66,22 @@ class AuthService {
         body: jsonEncode({
           'firstName': user.firstName,
           'lastName': user.lastName,
-          'phoneNumber': user.phoneNumber, // ✅ ບັນທຶກເບີໂທ
+          'phoneNumber': user.phoneNumber,
           'major': user.major,
           'graduationYear': user.graduationYear,
+          // 🔥 ເພີ່ມ 3 Field ນີ້ເພື່ອສົ່ງຫາ Backend 🔥
+          'workStatus': user.workStatus,
+          'workplace': user.workplace,
+          'jobPosition': user.jobPosition,
         }),
       );
-      return response.statusCode == 200;
+      
+      if (response.statusCode == 200) {
+        debugPrint('✅ Profile updated in database');
+        return true;
+      }
+      debugPrint('❌ Profile Update Failed: ${response.body}');
+      return false;
     } catch (e) {
       debugPrint('Update Profile Error: $e');
       return false;
@@ -82,8 +92,6 @@ class AuthService {
   Future<String?> uploadImage(Uint8List fileBytes, String fileName) async {
     try {
       var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
-      
-      // ເພີ່ມຂໍ້ມູນ category ບອກວ່າແມ່ນຮູບ profile
       request.fields['category'] = 'profile';
 
       request.files.add(http.MultipartFile.fromBytes(
@@ -97,7 +105,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['url']; // ສົ່ງ URL ທີ່ໄດ້ຈາກ Server ກັບໄປ
+        return data['url']; 
       }
       return null;
     } catch (e) {
@@ -113,17 +121,10 @@ class AuthService {
         Uri.parse('$baseUrl/users/$userId/avatar'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          // 🛑 ສົ່ງ Key ຊື່ 'profileImageUrl' ໃຫ້ກົງກັບ Backend 🛑
           'profileImageUrl': imageUrl, 
         }),
       );
-      
-      if (response.statusCode == 200) {
-        debugPrint('✅ Avatar updated in DB');
-        return true;
-      }
-      debugPrint('❌ Avatar DB Update Failed: ${response.body}');
-      return false;
+      return response.statusCode == 200;
     } catch (e) {
       debugPrint('Update Avatar Error: $e');
       return false;

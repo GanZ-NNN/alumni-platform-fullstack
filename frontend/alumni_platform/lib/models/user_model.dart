@@ -9,6 +9,10 @@ class UserModel {
   final String? graduationYear;
   final String? phoneNumber; // ເພີ່ມອັນນີ້
   final String? profileImageUrl;
+  final String workStatus;   // 'Working', 'Unemployed', 'Studying'
+  final String? workplace;   // ບ່ອນເຮັດວຽກ
+  final String? jobPosition; // ຕຳແໜ່ງ
+
 
   UserModel({
     required this.id,
@@ -21,6 +25,9 @@ class UserModel {
     this.graduationYear,
     this.phoneNumber, // ເພີ່ມ
     this.profileImageUrl,
+    required this.workStatus,
+    this.workplace,
+    this.jobPosition,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> json) {
@@ -35,6 +42,9 @@ class UserModel {
       graduationYear: json['graduationYear']?.toString(),
       phoneNumber: json['phoneNumber'] ?? '', 
       profileImageUrl: json['profileImageUrl'],
+      workStatus: json['workStatus'] ?? 'Unemployed',
+      workplace: json['workplace'],
+      jobPosition: json['jobPosition'],
     );
   }
 

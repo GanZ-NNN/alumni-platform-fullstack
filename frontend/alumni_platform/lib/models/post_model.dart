@@ -4,6 +4,7 @@ class PostModel {
   final String content;
   final String type; // 'news', 'event'
   final String createdAt;
+  final String? imageUrl;
 
   PostModel({
     required this.id,
@@ -11,6 +12,7 @@ class PostModel {
     required this.content,
     required this.type,
     required this.createdAt,
+     this.imageUrl
   });
 
   factory PostModel.fromMap(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class PostModel {
       content: json['content'] ?? '',
       type: json['type'] ?? 'news',
       createdAt: json['createdAt'] ?? '',
+      imageUrl: json['imageUrl'],
     );
   }
 }
