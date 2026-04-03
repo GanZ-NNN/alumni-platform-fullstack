@@ -1,17 +1,12 @@
-// lib/screens/alumni/home_screen.dart
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
-import '../../models/post_model.dart';
-import '../../services/post_service.dart';
-import '../auth/login_screen.dart';
 import 'profile_screen.dart';
 import 'directory_screen.dart';
 import 'jobs_screen.dart';
-import 'notification_list_screen.dart';
+import 'dashboard_page.dart';
 
 class AlumniHomeScreen extends StatefulWidget {
   final UserModel currentUser;
-
   const AlumniHomeScreen({super.key, required this.currentUser});
 
   @override
@@ -20,173 +15,103 @@ class AlumniHomeScreen extends StatefulWidget {
 
 class _AlumniHomeScreenState extends State<AlumniHomeScreen> {
   int _currentIndex = 0;
-  
   late UserModel _displayUser;
-  final PostService _postService = PostService();
-  List<PostModel> _posts = [];
-  bool _isLoadingPosts = true;
 
   @override
   void initState() {
     super.initState();
     _displayUser = widget.currentUser;
-    _fetchPosts();
-  }
-
-  void _fetchPosts() async {
-    setState(() => _isLoadingPosts = true);
-    final data = await _postService.getPosts();
-    setState(() {
-      _posts = data;
-      _isLoadingPosts = false;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    
-    // ລາຍຊື່ໜ້າຈໍທັງໝົດ (4 ໜ້າ)
     final List<Widget> pages = [
-      // [0] ໜ້າ News Feed
-      RefreshIndicator(
-        onRefresh: () async => _fetchPosts(), 
-        child: _isLoadingPosts
-            ? const Center(child: CircularProgressIndicator())
-            : _posts.isEmpty
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: const [
-                      SizedBox(height: 300, child: Center(child: Text("ຍັງບໍ່ມີຂ່າວສານໃນຕອນນີ້"))),
-                    ],
-                  )
-                : ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: _posts.length,
-                    itemBuilder: (context, index) {
-                      final post = _posts[index];
-                      return Card(
-                      margin: const EdgeInsets.all(10),
-                      elevation: 3,
-                      clipBehavior: Clip.antiAlias, // ເຮັດໃຫ້ຮູບມົນຕາມຂອບ Card
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ✅ 1. ສ່ວນສະແດງຮູບພາບ (ເພີ່ມໃໝ່) ✅
-                          if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
-                            Image.network(
-                              post.imageUrl!,
-                              width: double.infinity,
-                              height: 200, // ກຳນົດຄວາມສູງຕາມໃຈ
-                              fit: BoxFit.cover, // ໃຫ້ຮູບເຕັມພື້ນທີ່
-                              errorBuilder: (context, error, stackTrace) {
-                                // ຖ້າໂຫຼດຮູບບໍ່ໄດ້ (ເຊັ່ນ URL ເສຍ) ໃຫ້ບໍ່ໂຊຫຍັງ ຫຼື ໂຊ Placeholder
-                                return const SizedBox.shrink();
-                              },
-                            ),
-
-                          // ສ່ວນປ້າຍປະເພດ (NEWS/EVENT)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: post.type == 'event' ? Colors.orange : Colors.blue,
-                              borderRadius: const BorderRadius.only(
-                                // ປັບໃຫ້ມົນສະເພາະເບື້ອງລຸ່ມ ຖ້າມີຮູບຢູ່ເທິງ
-                                bottomRight: Radius.circular(10) 
-                              ),
-                            ),
-                            child: Text(
-                              post.type.toUpperCase(), 
-                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)
-                            ),
-                          ),
-
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(post.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                const SizedBox(height: 5),
-                                Text(post.content, style: const TextStyle(color: Colors.black87)),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Post Date: ${post.createdAt.length > 10 ? post.createdAt.substring(0, 10) : post.createdAt}',
-                                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                    },
-                  ),
-      ),
-
-      // [1] ໜ້າ Directory
+      AlumniDashboardPage(user: _displayUser),
       const DirectoryScreen(),
-
-      // [2] ໜ້າ Jobs (Career Hub) ✅ ເພີ່ມໃໝ່
       JobsScreen(currentUser: _displayUser),
-
-      // [3] ໜ້າ Profile
       ProfileScreen(
         user: _displayUser,
-        onUserUpdated: (updatedUser) {
-          setState(() {
-            _displayUser = updatedUser;
-          });
-        },
+        onUserUpdated: (u) => setState(() => _displayUser = u),
       ),
     ];
 
-    // ຊື່ Title ຕາມ Index
-    final List<String> titles = ['Alumni Feed', 'Directory', 'Career Hub', 'My Profile'];
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(titles[_currentIndex]), // ປ່ຽນ Title ຕາມໜ້າ
-        
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationListScreen()));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
-              );
-            },
-          )
-        ],
-      ),
-      
-      body: pages[_currentIndex], 
+      // 🛑 Removed the conditional AppBar entirely to fix the "double header" issue 🛑
+      // Each page (Dashboard, Directory, Jobs, Profile) now handles its own header area.
+      appBar: null,
+      body: pages[_currentIndex],
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed, // ✅ ສຳຄັນ! ຕ້ອງໃສ່ເມື່ອມີ 4 ປຸ່ມຂຶ້ນໄປ
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Directory'),
-          BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'), // ✅ ປຸ່ມໃໝ່
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+      // ✅ Custom Bottom Navigation Bar
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -5)),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+          child: Stack(
+            children: [
+              BottomNavigationBar(
+                currentIndex: _currentIndex,
+                onTap: (index) => setState(() => _currentIndex = index),
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: Colors.white,
+                selectedItemColor: const Color(0xFF1A56BE),
+                unselectedItemColor: Colors.grey[400],
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+                selectedLabelStyle: const TextStyle(fontFamily: 'Google Sans', fontSize: 12, fontWeight: FontWeight.bold),
+                unselectedLabelStyle: const TextStyle(fontFamily: 'Google Sans', fontSize: 12),
+                items: [
+                  _buildNavItem(Icons.home_outlined, Icons.home, 'ໜ້າຫຼັກ', 0),
+                  _buildNavItem(Icons.people_outline, Icons.people, 'ບັນຊີລາຍຊື່', 1),
+                  _buildNavItem(Icons.work_outline, Icons.work, 'ວຽກງານ', 2),
+                  _buildNavItem(Icons.person_outline, Icons.person, 'ໂປຣໄຟລ໌', 3),
+                ],
+              ),
+
+              // Blue Indicator Line
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                left: (MediaQuery.of(context).size.width / 4) * _currentIndex + (MediaQuery.of(context).size.width / 8) - 25,
+                top: 0,
+                child: Container(
+                  width: 50,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A56BE),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem(IconData icon, IconData activeIcon, String label, int index) {
+    return BottomNavigationBarItem(
+      icon: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Icon(icon),
+      ),
+      activeIcon: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Icon(activeIcon),
+      ),
+      label: label,
     );
   }
 }

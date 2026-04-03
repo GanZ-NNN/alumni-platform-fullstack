@@ -10,6 +10,10 @@ import 'package:path/path.dart' as p;
 
 late Connection connection;
 
+// 🛑 Configuration for server IP 🛑
+const String serverIp = '192.168.0.12';
+const int serverPort = 8080;
+
 // --- [Middleware: CORS] ---
 Middleware corsHeaders() {
   return createMiddleware(
@@ -238,7 +242,8 @@ void main(List<String> args) async {
           savedFileName = '$folder/$fileName';
         } else if (headerPart.contains('name="category"')) category = bodyPart.trim();
       }
-      return Response.ok(jsonEncode({'url': 'http://localhost:8080/uploads/$savedFileName'}), headers: {'Content-Type': 'application/json'});
+      // 🔥 Return IP-based URL instead of localhost 🔥
+      return Response.ok(jsonEncode({'url': 'http://$serverIp:$serverPort/uploads/$savedFileName'}), headers: {'Content-Type': 'application/json'});
     } catch (e) { return Response.internalServerError(body: 'Upload Error'); }
   });
 
@@ -306,8 +311,8 @@ void main(List<String> args) async {
   mainRouter.mount('/uploads/', staticHandler);
 
   final handler = Pipeline().addMiddleware(logRequests()).addMiddleware(corsHeaders()).addHandler(mainRouter.call);
-  await serve(handler, InternetAddress.anyIPv4, 8080);
-  print('🚀 Server listening on port 8080');
+  await serve(handler, InternetAddress.anyIPv4, serverPort);
+  print('🚀 Server listening on port $serverPort at http://$serverIp:$serverPort');
 }
 
 Future<void> saveLog(int? userId, String action, String details) async {

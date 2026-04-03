@@ -1,30 +1,27 @@
 import 'dart:convert';
-import 'dart:typed_data'; 
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
-import 'dart:io' show Platform; 
+import 'package:flutter/foundation.dart' show debugPrint;
 import '../models/user_model.dart';
+import 'api_config.dart';
 
-class AuthService { 
-  
-  String get baseUrl {
-    if (kIsWeb) return 'http://localhost:8080'; 
-    if (Platform.isAndroid) return 'http://10.0.2.2:8080'; 
-    return 'http://localhost:8080'; 
-  }
+class AuthService {
+  String get baseUrl => ApiConfig.baseUrl;
 
   // --- 1. ເຂົ້າສູ່ລະບົບ ---
   Future<UserModel?> login(String email, String password) async {
     try {
+      final url = Uri.parse('$baseUrl/login');
+
       final response = await http.post(
-        Uri.parse('$baseUrl/login'),
+        url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return UserModel.fromMap(data); 
+        return UserModel.fromMap(data);
       }
       debugPrint('Login Failed: ${response.body}');
       return null;
@@ -45,11 +42,11 @@ class AuthService {
         Uri.parse('$baseUrl/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': email, 'password': password, 
+          'email': email, 'password': password,
           'firstName': firstName, 'lastName': lastName,
           'major': major, 'graduationYear': graduationYear,
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Register Error: $e');
@@ -57,7 +54,7 @@ class AuthService {
     }
   }
 
-  // --- 3. ອັບເດດຂໍ້ມູນໂປຣໄຟລ໌ (✅ ອັບເດດເພື່ອຮອງຮັບຂໍ້ມູນວຽກເຮັດ) ---
+  // --- 3. ອັບເດດຂໍ້ມູນໂປຣໄຟລ໌ ---
   Future<bool> updateProfile(UserModel user) async {
     try {
       final response = await http.put(
@@ -69,19 +66,12 @@ class AuthService {
           'phoneNumber': user.phoneNumber,
           'major': user.major,
           'graduationYear': user.graduationYear,
-          // 🔥 ເພີ່ມ 3 Field ນີ້ເພື່ອສົ່ງຫາ Backend 🔥
           'workStatus': user.workStatus,
           'workplace': user.workplace,
           'jobPosition': user.jobPosition,
         }),
-      );
-      
-      if (response.statusCode == 200) {
-        debugPrint('✅ Profile updated in database');
-        return true;
-      }
-      debugPrint('❌ Profile Update Failed: ${response.body}');
-      return false;
+      ).timeout(const Duration(seconds: 10));
+      return response.statusCode == 200;
     } catch (e) {
       debugPrint('Update Profile Error: $e');
       return false;
@@ -100,12 +90,12 @@ class AuthService {
         filename: fileName,
       ));
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await request.send().timeout(const Duration(seconds: 20));
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['url']; 
+        return data['url'];
       }
       return null;
     } catch (e) {
@@ -121,9 +111,9 @@ class AuthService {
         Uri.parse('$baseUrl/users/$userId/avatar'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'profileImageUrl': imageUrl, 
+          'profileImageUrl': imageUrl,
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Update Avatar Error: $e');
@@ -132,6 +122,6 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    await Future.delayed(const Duration(milliseconds: 500)); 
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 }

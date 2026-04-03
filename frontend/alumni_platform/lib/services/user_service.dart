@@ -4,26 +4,20 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:http_parser/http_parser.dart';
 import '../models/user_model.dart';
+import 'api_config.dart';
 
 class UserService {
-  String get baseUrl {
-    if (kIsWeb) return 'http://localhost:8080';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8080';
-    return 'http://localhost:8080';
-  }
+  String get baseUrl => ApiConfig.baseUrl;
 
-  // ດຶງລາຍຊື່ສິດເກົ່າ (ຮອງຮັບການຄົ້ນຫາ)
-// ດຶງລາຍຊື່ສິດເກົ່າ ພ້ອມລະບົບ Filter
   Future<List<UserModel>> searchAlumni({String name = '', String major = '', String year = ''}) async {
     try {
-      // ສ້າງ URL ທີ່ມີ Query Parameters
       final uri = Uri.parse('$baseUrl/alumni').replace(queryParameters: {
         'name': name,
         'major': major,
         'year': year,
       });
 
-      final response = await http.get(uri);
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
@@ -31,12 +25,11 @@ class UserService {
       }
       return [];
     } catch (e) {
-      debugPrint('Error: $e');
+      debugPrint('Error searchAlumni: $e');
       return [];
     }
   }
 
-  // Upload image file to server (/upload) and return public URL or null
   Future<String?> uploadImage(File imageFile) async {
     try {
       final uri = Uri.parse('$baseUrl/upload');
@@ -56,7 +49,7 @@ class UserService {
       );
       request.files.add(multipartFile);
 
-      final streamed = await request.send();
+      final streamed = await request.send().timeout(const Duration(seconds: 20));
       final respStr = await streamed.stream.bytesToString();
       if (streamed.statusCode == 200) {
         final data = jsonDecode(respStr);
@@ -70,11 +63,14 @@ class UserService {
     }
   }
 
-  // Set avatar URL for user
   Future<bool> setAvatar(int userId, String imageUrl) async {
     try {
       final uri = Uri.parse('$baseUrl/users/$userId/avatar');
-      final resp = await http.put(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'profileImageUrl': imageUrl}));
+      final resp = await http.put(
+        uri, 
+        headers: {'Content-Type': 'application/json'}, 
+        body: jsonEncode({'profileImageUrl': imageUrl})
+      ).timeout(const Duration(seconds: 10));
       return resp.statusCode == 200;
     } catch (e) {
       debugPrint('Set avatar error: $e');
@@ -82,7 +78,6 @@ class UserService {
     }
   }
 
-  // Upload file and assign to user's avatar (returns updated URL or null)
   Future<String?> uploadAndSetAvatar(File imageFile, int userId) async {
     final url = await uploadImage(imageFile);
     if (url == null) return null;

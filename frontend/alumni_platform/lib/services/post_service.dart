@@ -1,22 +1,11 @@
-// lib/services/post_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/post_model.dart';
-import 'dart:io'; // ສຳລັບ Platform.isAndroid
-
+import 'api_config.dart';
 
 class PostService {
-  String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8080'; // Web
-    } else if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8080'; // Android Emulator
-    } else {
-      // 🔥 ສຳລັບ Windows, macOS, iOS (Simulator) ຕ້ອງໃຊ້ localhost 🔥
-      return 'http://localhost:8080'; 
-    }
-  }
+  String get baseUrl => ApiConfig.baseUrl;
 
   // Header ສໍາລັບ Admin (ເພາະຕ້ອງຜ່ານ Middleware isAdmin)
   Map<String, String> get _adminHeaders => {
@@ -24,13 +13,12 @@ class PostService {
     'x-user-role': 'admin',
   };
 
-  // --- 🛑 ຟັງຊັນທີ່ເຈົ້າຂາດໄປ (ເພີ່ມບ່ອນນີ້) 🛑 ---
   Future<List<PostModel>> getAdminPosts() async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/admin/posts'), 
         headers: _adminHeaders,
-      );
+      ).timeout(const Duration(seconds: 10));
       
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
@@ -45,10 +33,10 @@ class PostService {
     }
   }
 
-  // ຟັງຊັນດຶງຂ່າວທົ່ວໄປ (ສໍາລັບ Alumni - ບໍ່ໃຊ້ admin header)
   Future<List<PostModel>> getPosts() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/posts'));
+      final response = await http.get(Uri.parse('$baseUrl/posts'))
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         return data.map((item) => PostModel.fromMap(item)).toList();
@@ -60,14 +48,12 @@ class PostService {
     }
   }
 
-  // ຟັງຊັນສ້າງໂພສໃໝ່ (Admin)
-// ✅ ແກ້ໄຂຟັງຊັນ createPost ໃຫ້ຮັບ imageUrl
   Future<bool> createPost({
     required int authorId,
     required String title,
     required String content,
     required String type,
-    String? imageUrl, // 🛑 ເພີ່ມແຖວນີ້ເພື່ອຮັບ URL ຮູບ 🛑
+    String? imageUrl,
   }) async {
     try {
       final response = await http.post(
@@ -78,9 +64,9 @@ class PostService {
           'title': title,
           'content': content,
           'type': type,
-          'imageUrl': imageUrl ?? '', // 🛑 ສົ່ງ URL ນີ້ໄປຫາ Backend 🛑
+          'imageUrl': imageUrl ?? '',
         }),
-      );
+      ).timeout(const Duration(seconds: 15));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error createPost: $e');
@@ -88,13 +74,12 @@ class PostService {
     }
   }
 
-  // ຟັງຊັນລຶບໂພສ (Admin)
   Future<bool> deletePost(int id) async {
     try {
       final response = await http.delete(
         Uri.parse('$baseUrl/admin/posts/$id'), 
         headers: _adminHeaders,
-      );
+      ).timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error deletePost: $e');
@@ -102,7 +87,6 @@ class PostService {
     }
   }
 
-  // ແກ້ໄຂໂພສ (Admin)
   Future<bool> updatePost({
     required int id,
     required String title,
@@ -120,7 +104,7 @@ class PostService {
           'type': type,
           'imageUrl': imageUrl ?? '',
         }),
-      );
+      ).timeout(const Duration(seconds: 15));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error updatePost: $e');

@@ -1,20 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'dart:io';
 import '../models/job_model.dart';
+import 'api_config.dart';
 
 class JobService {
-  String get baseUrl {
-    if (kIsWeb) return 'http://localhost:8080';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8080';
-    return 'http://localhost:8080';
-  }
+  String get baseUrl => ApiConfig.baseUrl;
 
-  // ດຶງວຽກທັງໝົດ
   Future<List<JobModel>> getJobs() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/jobs'));
+      final response = await http.get(Uri.parse('$baseUrl/jobs'))
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         return data.map((item) => JobModel.fromMap(item)).toList();
@@ -26,7 +22,6 @@ class JobService {
     }
   }
 
-  // ໂພສວຽກ
   Future<bool> postJob({
     required int postedBy,
     required String companyName,
@@ -49,7 +44,7 @@ class JobService {
           'salaryRange': salaryRange,
           'contactEmail': contactEmail,
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error postJob: $e');

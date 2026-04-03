@@ -31,10 +31,25 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
-        // ປັບແຕ່ງ Theme ເພີ່ມເຕີມຖ້າຕ້ອງການ
+        // 🛑 Setting Global Font Family to Google Sans 🛑
+        fontFamily: 'Google Sans',
         appBarTheme: const AppBarTheme(
           centerTitle: false,
           elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          titleTextStyle: TextStyle(
+            fontFamily: 'Google Sans',
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(fontFamily: 'Google Sans'),
+          displayMedium: TextStyle(fontFamily: 'Google Sans'),
+          bodyLarge: TextStyle(fontFamily: 'Google Sans'),
+          bodyMedium: TextStyle(fontFamily: 'Google Sans'),
         ),
       ),
       home: const LoginScreen(),
