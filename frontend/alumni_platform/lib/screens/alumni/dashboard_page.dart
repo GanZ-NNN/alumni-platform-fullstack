@@ -3,6 +3,7 @@ import '../../models/user_model.dart';
 import '../../models/post_model.dart';
 import '../../services/admin_service.dart';
 import '../../services/post_service.dart';
+import '../../services/image_helper.dart'; // ✅ Import ImageHelper
 import '../auth/login_screen.dart';
 import 'notification_list_screen.dart';
 
@@ -12,15 +13,6 @@ class AlumniDashboardPage extends StatefulWidget {
 
   @override
   State<AlumniDashboardPage> createState() => _AlumniDashboardPageState();
-}
-
-class _AlumniDashboardState extends State<AlumniDashboardPage> {
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
-  // Use local state if needed
 }
 
 class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
@@ -90,7 +82,6 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
     );
   }
 
-  // --- Header Section with Logo, Notifications, and Logout ---
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.only(
@@ -117,8 +108,8 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('ສະບາຍດີ, ${widget.user.firstName}', 
-                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    const Text('ຄະນະວິທະຍາສາດທຳມະຊາດ', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+                    const Text('ຄະນະວິທະຍາສາດທຳມະຊາດ', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Google Sans')),
                   ],
                 ),
               ),
@@ -152,6 +143,7 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
       child: const TextField(
         decoration: InputDecoration(
           hintText: 'ຄົ້ນຫາ...', 
+          hintStyle: TextStyle(fontFamily: 'Google Sans'),
           prefixIcon: Icon(Icons.search, size: 20), 
           border: InputBorder.none, 
           contentPadding: EdgeInsets.symmetric(vertical: 10)
@@ -192,28 +184,27 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
   }
 
   Widget _buildEventsList(List<PostModel> events) {
-    if (events.isEmpty) return const Center(child: Text("ຍັງບໍ່ມີກິດຈະກຳ"));
+    if (events.isEmpty) return const Center(child: Text("ຍັງບໍ່ມີກິດຈະກຳ", style: TextStyle(fontFamily: 'Google Sans')));
     return Column(
       children: events.map((e) => ListTile(
         leading: Container(width: 45, height: 45, decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.event, color: Colors.blue)),
-        title: Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(e.createdAt.substring(0, 10)),
+        title: Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+        subtitle: Text(e.createdAt.substring(0, 10), style: const TextStyle(fontFamily: 'Google Sans')),
         trailing: const Icon(Icons.chevron_right),
       )).toList(),
     );
   }
 
   Widget _buildNewsList(List<PostModel> news) {
-    if (news.isEmpty) return const Center(child: Text("ຍັງບໍ່ມີຂ່າວສານ"));
+    if (news.isEmpty) return const Center(child: Text("ຍັງບໍ່ມີຂ່າວສານ", style: TextStyle(fontFamily: 'Google Sans')));
     return Column(
       children: news.map((n) => Card(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
         child: ListTile(
-          leading: n.imageUrl != null && n.imageUrl!.isNotEmpty
-              ? Image.network(n.imageUrl!, width: 50, height: 50, fit: BoxFit.cover)
-              : const Icon(Icons.article),
-          title: Text(n.title),
-          subtitle: Text(n.content, maxLines: 1, overflow: TextOverflow.ellipsis),
+          // ✅ Use ImageHelper.networkImage for News images
+          leading: ImageHelper.networkImage(n.imageUrl, width: 50, height: 50),
+          title: Text(n.title, style: const TextStyle(fontFamily: 'Google Sans')),
+          subtitle: Text(n.content, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontFamily: 'Google Sans')),
         ),
       )).toList(),
     );
@@ -225,8 +216,8 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          TextButton(onPressed: onTap, child: const Text('ເບິ່ງທັງໝົດ')),
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+          TextButton(onPressed: onTap, child: const Text('ເບິ່ງທັງໝົດ', style: TextStyle(fontFamily: 'Google Sans'))),
         ],
       ),
     );
@@ -240,8 +231,8 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
         children: [
           Icon(icon, color: Colors.white, size: 24),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 10, fontFamily: 'Google Sans')),
           ]),
         ],
       ),
@@ -253,8 +244,8 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(color: color.withOpacity(0.05), borderRadius: BorderRadius.circular(15), border: Border.all(color: color.withOpacity(0.2))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-        Text(name, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
-        Text(count, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+        Text(name, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12, fontFamily: 'Google Sans'), maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text(count, style: const TextStyle(color: Colors.grey, fontSize: 10, fontFamily: 'Google Sans')),
       ]),
     );
   }
@@ -266,8 +257,8 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
       child: const Row(children: [
         Icon(Icons.auto_graph, color: Colors.blue), SizedBox(width: 15),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('ພາລະກິດຂອງພວກເຮົາ', style: TextStyle(fontWeight: FontWeight.bold)),
-          Text('ເຊື່ອມໂຍງນັກສຶກສາເກົ່າ ສ້າງເຄືອຂ່າຍວິຊາຊີບ', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          Text('ພາລະກິດຂອງພວກເຮົາ', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+          Text('ເຊື່ອມໂຍງນັກສຶກສາເກົ່າ ສ້າງເຄືອຂ່າຍວິຊາຊີບ', style: TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Google Sans')),
         ])),
       ]),
     );
@@ -280,10 +271,10 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
       child: Column(children: [
         const Icon(Icons.emoji_events, color: Colors.amber, size: 40),
         const SizedBox(height: 10),
-        const Text('ແບ່ງປັນຄວາມສຳເລັດຂອງທ່ານ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        const Text('ບອກພວກເຮົາກ່ຽວກັບຜົນງານ ແລະ ຄວາມກ້າວໜ້າຂອງທ່ານ', style: TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center),
+        const Text('ແບ່ງປັນຄວາມສຳເລັດຂອງທ່ານ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+        const Text('ບອກພວກເຮົາກ່ຽວກັບຜົນງານ ແລະ ຄວາມກ້າວໜ້າຂອງທ່ານ', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Google Sans'), textAlign: TextAlign.center),
         const SizedBox(height: 15),
-        ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.blue), child: const Text('ອັບເດດໂປຣໄຟລ໌')),
+        ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))), child: const Text('ອັບເດດໂປຣໄຟລ໌', style: TextStyle(fontFamily: 'Google Sans'))),
       ]),
     );
   }

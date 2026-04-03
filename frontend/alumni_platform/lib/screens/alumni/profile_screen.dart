@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../services/user_service.dart';
 import '../auth/login_screen.dart';
 import 'notification_list_screen.dart';
+import 'settings_screen.dart'; // ✅ Import SettingsScreen
 
 class ProfileScreen extends StatefulWidget {
   final UserModel user; 
@@ -104,7 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   firstName: fNameCtrl.text,
                   lastName: lNameCtrl.text,
                   phoneNumber: phoneCtrl.text,
-                  major: majorCtrl.text,
+                  major: fNameCtrl.text.isNotEmpty ? majorCtrl.text : currentUser.major,
                   graduationYear: gradCtrl.text,
                   profileImageUrl: currentUser.profileImageUrl,
                   workStatus: selectedStatus, 
@@ -238,17 +239,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
+          // ✅ Notification Icon (Previously existing)
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.white, size: 28),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationListScreen())),
           ),
+          // ✅ Settings Icon Button (New)
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+            icon: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              child: const Icon(Icons.settings, color: Colors.grey, size: 20),
+            ),
             onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (_) => SettingsScreen(user: currentUser))
               );
             },
           ),

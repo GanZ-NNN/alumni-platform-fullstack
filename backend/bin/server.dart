@@ -11,8 +11,15 @@ import 'package:path/path.dart' as p;
 late Connection connection;
 
 // 🛑 Configuration for server IP 🛑
+// Change this to your computer's local IP address
 const String serverIp = '192.168.0.12';
 const int serverPort = 8080;
+
+// Helper to replace localhost with serverIp in URLs
+String fixUrl(String? url) {
+  if (url == null) return '';
+  return url.replaceAll('localhost', serverIp);
+}
 
 // --- [Middleware: CORS] ---
 Middleware corsHeaders() {
@@ -76,7 +83,7 @@ void main(List<String> args) async {
   // ---------------------------------------------------------
   final adminRouter = Router();
 
-  // --- Reports (ເພີ່ມໃໝ່) ---
+  // --- Reports ---
   adminRouter.get('/reports/majors', (Request req) async {
     final res = await connection.execute("SELECT major, COUNT(*) FROM users WHERE role = 'alumni' GROUP BY major");
     return Response.ok(jsonEncode(res.map((row) => {'major': row[0] ?? 'Unknown', 'count': row[1]}).toList()), headers: {'Content-Type': 'application/json'});
@@ -98,7 +105,7 @@ void main(List<String> args) async {
     final users = result.map((row) => {
       'id': row[0], 'email': row[1], 'firstName': row[2], 'lastName': row[3], 'role': row[4],
       'status': row[5], 'major': row[6], 'graduationYear': row[7], 'phoneNumber': row[8],
-      'profileImageUrl': row[9], 'workStatus': row[10], 'workplace': row[11], 'jobPosition': row[12],
+      'profileImageUrl': fixUrl(row[9] as String?), 'workStatus': row[10], 'workplace': row[11], 'jobPosition': row[12],
       'createdAt': row[13].toString(),
     }).toList();
     return Response.ok(jsonEncode(users), headers: {'Content-Type': 'application/json'});
@@ -112,7 +119,7 @@ void main(List<String> args) async {
 
   adminRouter.get('/stats', (Request req) async {
     final u = await connection.execute("SELECT COUNT(*) FROM users WHERE role = 'alumni'");
-    final p = await connection.execute("SELECT COUNT(*) FROM users WHERE status = 'pending' AND role = 'alumni'");
+    final p = await connection.execute("SELECT COUNT(*) FROM users status = 'pending' AND role = 'alumni'");
     final po = await connection.execute("SELECT COUNT(*) FROM posts");
     final j = await connection.execute("SELECT COUNT(*) FROM jobs");
     return Response.ok(jsonEncode({'totalAlumni': u[0][0], 'pendingUsers': p[0][0], 'totalPosts': po[0][0], 'totalJobs': j[0][0]}), headers: {'Content-Type': 'application/json'});
@@ -131,7 +138,7 @@ void main(List<String> args) async {
 
   adminRouter.get('/posts', (Request req) async {
     final result = await connection.execute('SELECT id, title, content, image_url, type, created_at FROM posts ORDER BY created_at DESC');
-    return Response.ok(jsonEncode(result.map((row) => {'id': row[0], 'title': row[1], 'content': row[2], 'imageUrl': row[3], 'type': row[4], 'createdAt': row[5].toString()}).toList()), headers: {'Content-Type': 'application/json'});
+    return Response.ok(jsonEncode(result.map((row) => {'id': row[0], 'title': row[1], 'content': row[2], 'imageUrl': fixUrl(row[3] as String?), 'type': row[4], 'createdAt': row[5].toString()}).toList()), headers: {'Content-Type': 'application/json'});
   });
 
   adminRouter.post('/posts', (Request req) async {
@@ -158,7 +165,6 @@ void main(List<String> args) async {
     return Response.ok(jsonEncode({'message': 'Notification sent'}));
   });
 
-  // 1. ລາຍງານບໍລິສັດຍອດນິຍົມ (Top Workplaces)
   adminRouter.get('/reports/workplaces', (Request req) async {
     try {
       final result = await connection.execute(
@@ -171,7 +177,6 @@ void main(List<String> args) async {
     } catch (e) { return Response.internalServerError(body: 'Error: $e'); }
   });
 
-  // 2. ລາຍງານຕຳແໜ່ງງານຍອດນິຍົມ (Top Job Positions)
   adminRouter.get('/reports/positions', (Request req) async {
     try {
       final result = await connection.execute(
@@ -184,30 +189,16 @@ void main(List<String> args) async {
     } catch (e) { return Response.internalServerError(body: 'Error: $e'); }
   });
 
-  // --- [ADMIN: UPDATE POST] ---
   adminRouter.put('/posts/<id>', (Request req, String id) async {
     try {
       final body = jsonDecode(await req.readAsString());
-      
       await connection.execute(
-        Sql.named(
-          'UPDATE posts SET title = @title, content = @content, type = @type, image_url = @imageUrl '
-          'WHERE id = @id'
-        ),
-        parameters: {
-          'id': int.parse(id),
-          'title': body['title'],
-          'content': body['content'],
-          'type': body['type'],
-          'imageUrl': body['imageUrl'] ?? '',
-        },
+        Sql.named('UPDATE posts SET title = @title, content = @content, type = @type, image_url = @imageUrl WHERE id = @id'),
+        parameters: {'id': int.parse(id), 'title': body['title'], 'content': body['content'], 'type': body['type'], 'imageUrl': body['imageUrl'] ?? ''},
       );
-
       await saveLog(null, 'UPDATE_POST', 'Admin updated Post ID: $id');
       return Response.ok(jsonEncode({'message': 'Post updated successfully'}));
-    } catch (e) {
-      return Response.internalServerError(body: 'Update Error: $e');
-    }
+    } catch (e) { return Response.internalServerError(body: 'Update Error: $e'); }
   });
 
   final adminHandler = Pipeline().addMiddleware(isAdmin()).addHandler(adminRouter.call);
@@ -242,7 +233,6 @@ void main(List<String> args) async {
           savedFileName = '$folder/$fileName';
         } else if (headerPart.contains('name="category"')) category = bodyPart.trim();
       }
-      // 🔥 Return IP-based URL instead of localhost 🔥
       return Response.ok(jsonEncode({'url': 'http://$serverIp:$serverPort/uploads/$savedFileName'}), headers: {'Content-Type': 'application/json'});
     } catch (e) { return Response.internalServerError(body: 'Upload Error'); }
   });
@@ -254,7 +244,11 @@ void main(List<String> args) async {
       if (res.isEmpty) return Response.forbidden(jsonEncode({'error': 'User not found'}));
       if (!DBCrypt().checkpw(body['password'], res.first[2].toString())) return Response.forbidden(jsonEncode({'error': 'Invalid password'}));
       final row = res.first;
-      return Response.ok(jsonEncode({'id': row[0], 'email': row[1], 'firstName': row[3], 'lastName': row[4], 'role': row[5], 'status': row[6], 'major': row[7], 'graduationYear': row[8], 'phoneNumber': row[9], 'profileImageUrl': row[10], 'workStatus': row[11], 'workplace': row[12], 'jobPosition': row[13]}), headers: {'Content-Type': 'application/json'});
+      return Response.ok(jsonEncode({
+        'id': row[0], 'email': row[1], 'firstName': row[3], 'lastName': row[4], 'role': row[5], 'status': row[6], 
+        'major': row[7], 'graduationYear': row[8], 'phoneNumber': row[9], 'profileImageUrl': fixUrl(row[10] as String?), 
+        'workStatus': row[11], 'workplace': row[12], 'jobPosition': row[13]
+      }), headers: {'Content-Type': 'application/json'});
     } catch (e) { return Response.internalServerError(body: 'Login Error'); }
   });
 
@@ -281,13 +275,13 @@ void main(List<String> args) async {
 
   mainRouter.get('/posts', (Request req) async {
     final res = await connection.execute('SELECT id, title, content, image_url, type, created_at FROM posts ORDER BY created_at DESC');
-    return Response.ok(jsonEncode(res.map((r) => {'id': r[0], 'title': r[1], 'content': r[2], 'imageUrl': r[3], 'type': r[4], 'createdAt': r[5].toString()}).toList()), headers: {'Content-Type': 'application/json'});
+    return Response.ok(jsonEncode(res.map((r) => {'id': r[0], 'title': r[1], 'content': r[2], 'imageUrl': fixUrl(r[3] as String?), 'type': r[4], 'createdAt': r[5].toString()}).toList()), headers: {'Content-Type': 'application/json'});
   });
 
   mainRouter.get('/alumni', (Request req) async {
     final q = req.url.queryParameters['q'] ?? '';
     final res = await connection.execute(Sql.named("SELECT id, first_name, last_name, major, graduation_year, profile_image_url FROM users WHERE status = 'active' AND role = 'alumni' AND (first_name ILIKE @q OR major ILIKE @q)"), parameters: {'q': '%$q%'});
-    return Response.ok(jsonEncode(res.map((r) => {'id': r[0], 'firstName': r[1], 'lastName': r[2], 'major': r[3], 'graduationYear': r[4], 'profileImageUrl': r[5]}).toList()), headers: {'Content-Type': 'application/json'});
+    return Response.ok(jsonEncode(res.map((r) => {'id': r[0], 'firstName': r[1], 'lastName': r[2], 'major': r[3], 'graduationYear': r[4], 'profileImageUrl': fixUrl(r[5] as String?)}).toList()), headers: {'Content-Type': 'application/json'});
   });
 
   mainRouter.get('/jobs', (Request req) async {
