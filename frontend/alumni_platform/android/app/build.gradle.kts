@@ -11,12 +11,12 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -41,4 +41,19 @@ android {
 
 flutter {
     source = "../.."
+}
+// ວາງໃສ່ລຸ່ມສຸດຂອງໄຟລ໌ android/app/build.gradle.kts
+configurations.all {
+    resolutionStrategy {
+        // ບັງຄັບໃຫ້ໃຊ້ Library ເວີຊັນທີ່ເກົ່າລົງໜ້ອຍໜຶ່ງ ເພື່ອໃຫ້ Build ຜ່ານໃນ AGP 8.2.2
+        force("androidx.activity:activity:1.8.0")
+        force("androidx.core:core:1.12.0")
+        force("androidx.core:core-ktx:1.12.0")
+        force("androidx.navigationevent:navigationevent-android:1.0.0-alpha01")
+    }
+}
+
+// ປິດການກວດສອບ Metadata ເພາະ Library ໃໝ່ພະຍາຍາມບັງຄັບໃຫ້ເຮົາອັບ AGP ເປັນ 8.9.1
+tasks.withType<com.android.build.gradle.internal.tasks.CheckAarMetadataTask> {
+    enabled = false
 }
