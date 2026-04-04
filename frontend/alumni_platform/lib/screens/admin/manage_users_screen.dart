@@ -3,7 +3,8 @@ import '../../models/user_model.dart';
 import '../../services/admin_service.dart';
 
 class ManageUsersScreen extends StatefulWidget {
-  const ManageUsersScreen({super.key});
+  final bool showOnlyPending;
+  const ManageUsersScreen({super.key, this.showOnlyPending = false});
 
   @override
   State<ManageUsersScreen> createState() => _ManageUsersScreenState();
@@ -12,11 +13,10 @@ class ManageUsersScreen extends StatefulWidget {
 class _ManageUsersScreenState extends State<ManageUsersScreen> {
   final AdminService _adminService = AdminService();
   List<UserModel> _users = [];
+  List<UserModel> _filteredUsers = [];
   bool _isLoading = true;
-
-  // ✅ 1. Controllers ສຳລັບ Scroll
-  final ScrollController _verticalController = ScrollController();
-  final ScrollController _horizontalController = ScrollController();
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _roleFilter = 'All Roles';
 
   @override
   void initState() {
@@ -24,163 +24,194 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     _fetchUsers();
   }
 
-  @override
-  void dispose() {
-    // ✅ 2. ລ້າງ Controllers ເມື່ອປິດໜ້າ
-    _verticalController.dispose();
-    _horizontalController.dispose();
-    super.dispose();
-  }
-
   void _fetchUsers() async {
     setState(() => _isLoading = true);
     final users = await _adminService.getAllUsers();
     if (mounted) {
       setState(() {
-        _users = users;
+        _users = widget.showOnlyPending 
+            ? users.where((u) => u.status == 'pending').toList() 
+            : users;
+        _filteredUsers = _users;
         _isLoading = false;
       });
     }
   }
 
-  void _approveUser(String id) async {
-    final success = await _adminService.approveUser(id);
-    if (success && mounted) {
-      _fetchUsers();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User Approved!'), backgroundColor: Colors.green),
-      );
-    }
-  }
-
-  void _deleteUser(String id) async {
-    final success = await _adminService.deleteUser(id);
-    if (success && mounted) {
-      _fetchUsers();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User Deleted!'), backgroundColor: Colors.red),
-      );
-    }
+  void _filterUsers(String query) {
+    setState(() {
+      _filteredUsers = _users.where((u) {
+        final nameMatch = u.firstName.toLowerCase().contains(query.toLowerCase()) || 
+                          (u.lastName?.toLowerCase().contains(query.toLowerCase()) ?? false);
+        final roleMatch = _roleFilter == 'All Roles' || u.role.toLowerCase() == _roleFilter.toLowerCase();
+        return nameMatch && roleMatch;
+      }).toList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    // 🛑 No Expanded or Fixed Height containers here to allow natural expansion in parent SingleChildScrollView
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // --- 1. Header Toolbar ---
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              widget.showOnlyPending ? 'Membership Approvals' : 'User Management',
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontFamily: 'Google Sans'),
+            ),
+            ElevatedButton.icon(
+              onPressed: _fetchUsers,
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text('Refresh Data', style: TextStyle(fontWeight: FontWeight.w600)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[50],
+                foregroundColor: const Color(0xFF1A56BE),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha:0.05), blurRadius: 10)
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'User Accounts Management',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        // --- 2. Search & Filter Row ---
+        Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: TextField(
+                controller: _searchCtrl,
+                onChanged: _filterUsers,
+                decoration: InputDecoration(
+                  hintText: 'Search by name or email...',
+                  prefixIcon: const Icon(Icons.search, size: 22, color: Colors.blueGrey),
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  hintStyle: const TextStyle(fontFamily: 'Google Sans', color: Colors.blueGrey),
+                ),
               ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _fetchUsers,
-                tooltip: 'Refresh List',
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(12)),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _roleFilter,
+                    icon: const Icon(Icons.filter_list, color: Colors.blueGrey),
+                    items: ['All Roles', 'Admin', 'Alumni']
+                        .map((r) => DropdownMenuItem(value: r, child: Text(r, style: const TextStyle(fontFamily: 'Google Sans', fontWeight: FontWeight.w500))))
+                        .toList(),
+                    onChanged: (val) {
+                      setState(() => _roleFilter = val!);
+                      _filterUsers(_searchCtrl.text);
+                    },
+                  ),
+                ),
               ),
-            ],
-          ),
-          const SizedBox(height: 25),
-          
-          // --- ສ່ວນຂອງຕາຕະລາງ (ແກ້ໄຂ Scrollbar) ---
-          Expanded(
-            child: Scrollbar(
-              controller: _verticalController,
-              thumbVisibility: true,
-              trackVisibility: true,
-              child: SingleChildScrollView(
-                controller: _verticalController,
-                scrollDirection: Axis.vertical,
-                primary: false, // ✅ 🛑 ສຳຄັນ: ຕ້ອງເປັນ false ເພາະເຮົາໃສ່ controller ເອງ
-                child: Scrollbar(
-                  controller: _horizontalController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  notificationPredicate: (notification) => notification.depth == 1,
-                  child: SingleChildScrollView(
-                    controller: _horizontalController,
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
+
+        // --- 3. DataTable ---
+        _isLoading
+            ? const Center(child: Padding(padding: EdgeInsets.all(60), child: CircularProgressIndicator()))
+            : _filteredUsers.isEmpty
+                ? const Center(child: Padding(padding: EdgeInsets.all(60), child: Text('No users found.', style: TextStyle(fontFamily: 'Google Sans', fontSize: 16, color: Colors.blueGrey))))
+                : SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    primary: false, // ✅ 🛑 ຕ້ອງເປັນ false
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 350),
+                      constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 500),
                       child: DataTable(
-                        headingRowColor: WidgetStateProperty.all(Colors.grey[50]),
-                        columnSpacing: 24,
-                        horizontalMargin: 12,
+                        headingRowHeight: 60,
+                        dataRowMinHeight: 70,
+                        dataRowMaxHeight: 70,
+                        headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
+                        horizontalMargin: 24,
+                        columnSpacing: 40,
                         columns: const [
-                          DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Email', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Role', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
+                          DataColumn(label: Text('NAME', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey, letterSpacing: 1.1, fontFamily: 'Google Sans'))),
+                          DataColumn(label: Text('EMAIL', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey, letterSpacing: 1.1, fontFamily: 'Google Sans'))),
+                          DataColumn(label: Text('MAJOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey, letterSpacing: 1.1, fontFamily: 'Google Sans'))),
+                          DataColumn(label: Text('STATUS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey, letterSpacing: 1.1, fontFamily: 'Google Sans'))),
+                          DataColumn(label: Text('ACTIONS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey, letterSpacing: 1.1, fontFamily: 'Google Sans'))),
                         ],
-                        rows: _users.map((user) => DataRow(cells: [
-                          DataCell(Text('${user.firstName} ${user.lastName ?? ''}')),
-                          DataCell(Text(user.email)),
-                          DataCell(Text(user.role.toUpperCase(), style: const TextStyle(fontSize: 12, color: Colors.blueGrey))),
+                        rows: _filteredUsers.map((user) => DataRow(cells: [
+                          DataCell(Row(
+                            children: [
+                              CircleAvatar(radius: 18, backgroundColor: Colors.blue[100], child: Text(user.firstName[0], style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
+                              const SizedBox(width: 14),
+                              Text('${user.firstName} ${user.lastName ?? ''}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF1E293B), fontFamily: 'Google Sans')),
+                            ],
+                          )),
+                          DataCell(Text(user.email, style: const TextStyle(fontFamily: 'Google Sans', color: Colors.blueGrey))),
+                          DataCell(Text(user.major ?? '-', style: const TextStyle(fontFamily: 'Google Sans', color: Colors.blueGrey))),
                           DataCell(_buildStatusBadge(user.status)),
                           DataCell(Row(
                             children: [
                               if (user.status == 'pending')
-                                IconButton(
-                                  icon: const Icon(Icons.check_circle, color: Colors.green, size: 22),
-                                  onPressed: () => _approveUser(user.id.toString()),
-                                  tooltip: 'Approve',
-                                ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.redAccent, size: 22),
-                                onPressed: () => _deleteUser(user.id.toString()),
-                                tooltip: 'Delete User',
-                              ),
+                                _buildActionButton(Icons.check_circle_rounded, Colors.green, () => _approveUser(user.id.toString())),
+                              _buildActionButton(Icons.edit_note_rounded, Colors.blue, () {}),
+                              _buildActionButton(Icons.delete_forever_rounded, Colors.red, () => _deleteUser(user.id.toString())),
                             ],
                           )),
                         ])).toList(),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
   Widget _buildStatusBadge(String status) {
-    bool isActive = status == 'active';
+    Color color = Colors.grey;
+    if (status == 'active') color = Colors.green;
+    if (status == 'pending') color = Colors.orange;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isActive ? Colors.green[50] : Colors.orange[50],
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isActive ? Colors.green.withValues(alpha:0.3) : Colors.orange.withValues(alpha:0.3)),
-      ),
+      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(30)),
       child: Text(
         status.toUpperCase(),
-        style: TextStyle(
-          color: isActive ? Colors.green[800] : Colors.orange[800],
-          fontWeight: FontWeight.bold,
-          fontSize: 10,
+        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Google Sans'),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(IconData icon, Color color, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: Tooltip(
+        message: icon == Icons.check_circle_rounded ? 'Approve' : (icon == Icons.edit_note_rounded ? 'Edit' : 'Delete'),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: color, size: 22),
+          ),
         ),
       ),
     );
+  }
+
+  void _approveUser(String id) async {
+    final success = await _adminService.approveUser(id);
+    if (success) _fetchUsers();
+  }
+
+  void _deleteUser(String id) async {
+    final success = await _adminService.deleteUser(id);
+    if (success) _fetchUsers();
   }
 }
