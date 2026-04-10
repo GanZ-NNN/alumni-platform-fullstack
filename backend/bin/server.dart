@@ -10,18 +10,14 @@ import 'package:path/path.dart' as p;
 
 late Connection connection;
 
-// 🛑 Configuration for server IP 🛑
-// Change this to your computer's local IP address
 const String serverIp = '192.168.0.12';
 const int serverPort = 8080;
 
-// Helper to replace localhost with serverIp in URLs
 String fixUrl(String? url) {
   if (url == null) return '';
   return url.replaceAll('localhost', serverIp);
 }
 
-// --- [Middleware: CORS] ---
 Middleware corsHeaders() {
   return createMiddleware(
     requestHandler: (request) {
@@ -44,7 +40,6 @@ Middleware corsHeaders() {
   );
 }
 
-// --- [Middleware: Admin Check] ---
 Middleware isAdmin() {
   return createMiddleware(
     requestHandler: (Request request) {
@@ -78,12 +73,8 @@ void main(List<String> args) async {
 
   final staticHandler = createStaticHandler('uploads', defaultDocument: 'index.html');
 
-  // ---------------------------------------------------------
-  // 3. ADMIN ROUTER (Route ທີ່ຕ້ອງການສິດ Admin)
-  // ---------------------------------------------------------
   final adminRouter = Router();
 
-  // --- Reports ---
   adminRouter.get('/reports/majors', (Request req) async {
     final res = await connection.execute("SELECT major, COUNT(*) FROM users WHERE role = 'alumni' GROUP BY major");
     return Response.ok(jsonEncode(res.map((row) => {'major': row[0] ?? 'Unknown', 'count': row[1]}).toList()), headers: {'Content-Type': 'application/json'});
@@ -99,14 +90,14 @@ void main(List<String> args) async {
     return Response.ok(jsonEncode(res.map((row) => {'status': row[0] ?? 'Unknown', 'count': row[1]}).toList()), headers: {'Content-Type': 'application/json'});
   });
 
-  // --- Management ---
   adminRouter.get('/users', (Request req) async {
-    final result = await connection.execute('SELECT id, email, first_name, last_name, role, status, major, graduation_year, phone_number, profile_image_url, work_status, workplace, job_position, created_at FROM users ORDER BY created_at DESC');
+    final result = await connection.execute('SELECT id, email, first_name, last_name, role, status, major, graduation_year, phone_number, profile_image_url, work_status, workplace, job_position, gender, dob, student_id, education_level, industry, created_at FROM users ORDER BY created_at DESC');
     final users = result.map((row) => {
       'id': row[0], 'email': row[1], 'firstName': row[2], 'lastName': row[3], 'role': row[4],
       'status': row[5], 'major': row[6], 'graduationYear': row[7], 'phoneNumber': row[8],
       'profileImageUrl': fixUrl(row[9] as String?), 'workStatus': row[10], 'workplace': row[11], 'jobPosition': row[12],
-      'createdAt': row[13].toString(),
+      'gender': row[13], 'dob': row[14], 'studentId': row[15], 'educationLevel': row[16], 'industry': row[17],
+      'createdAt': row[18].toString(),
     }).toList();
     return Response.ok(jsonEncode(users), headers: {'Content-Type': 'application/json'});
   });
@@ -119,7 +110,7 @@ void main(List<String> args) async {
 
   adminRouter.get('/stats', (Request req) async {
     final u = await connection.execute("SELECT COUNT(*) FROM users WHERE role = 'alumni'");
-    final p = await connection.execute("SELECT COUNT(*) FROM users status = 'pending' AND role = 'alumni'");
+    final p = await connection.execute("SELECT COUNT(*) FROM users WHERE status = 'pending' AND role = 'alumni'");
     final po = await connection.execute("SELECT COUNT(*) FROM posts");
     final j = await connection.execute("SELECT COUNT(*) FROM jobs");
     return Response.ok(jsonEncode({'totalAlumni': u[0][0], 'pendingUsers': p[0][0], 'totalPosts': po[0][0], 'totalJobs': j[0][0]}), headers: {'Content-Type': 'application/json'});
@@ -203,9 +194,6 @@ void main(List<String> args) async {
 
   final adminHandler = Pipeline().addMiddleware(isAdmin()).addHandler(adminRouter.call);
 
-  // ---------------------------------------------------------
-  // 4. MAIN ROUTER (Public & Alumni)
-  // ---------------------------------------------------------
   final mainRouter = Router();
 
   mainRouter.get('/', (Request req) => Response.ok('Alumni API is Ready!'));
@@ -240,30 +228,54 @@ void main(List<String> args) async {
   mainRouter.post('/login', (Request req) async {
     try {
       final body = jsonDecode(await req.readAsString());
-      final res = await connection.execute(Sql.named('SELECT id, email, password, first_name, last_name, role, status, major, graduation_year, phone_number, profile_image_url, work_status, workplace, job_position FROM users WHERE email = @email'), parameters: {'email': body['email']});
+      // Case-insensitive login using ILIKE
+      final res = await connection.execute(
+        Sql.named('SELECT id, email, password, first_name, last_name, role, status, major, graduation_year, phone_number, profile_image_url, work_status, workplace, job_position, gender, dob, student_id, education_level, industry FROM users WHERE email ILIKE @email'), 
+        parameters: {'email': body['email']}
+      );
+      
       if (res.isEmpty) return Response.forbidden(jsonEncode({'error': 'User not found'}));
-      if (!DBCrypt().checkpw(body['password'], res.first[2].toString())) return Response.forbidden(jsonEncode({'error': 'Invalid password'}));
+      
+      // Verify password using DBCrypt
+      if (!DBCrypt().checkpw(body['password'], res.first[2].toString())) {
+        return Response.forbidden(jsonEncode({'error': 'Invalid password'}));
+      }
+      
       final row = res.first;
       return Response.ok(jsonEncode({
         'id': row[0], 'email': row[1], 'firstName': row[3], 'lastName': row[4], 'role': row[5], 'status': row[6], 
         'major': row[7], 'graduationYear': row[8], 'phoneNumber': row[9], 'profileImageUrl': fixUrl(row[10] as String?), 
-        'workStatus': row[11], 'workplace': row[12], 'jobPosition': row[13]
+        'workStatus': row[11], 'workplace': row[12], 'jobPosition': row[13],
+        'gender': row[14], 'dob': row[15], 'studentId': row[16], 'educationLevel': row[17], 'industry': row[18]
       }), headers: {'Content-Type': 'application/json'});
-    } catch (e) { return Response.internalServerError(body: 'Login Error'); }
+    } catch (e) { 
+      print('Login Error: $e');
+      return Response.internalServerError(body: 'Login Error'); 
+    }
   });
 
   mainRouter.post('/register', (Request req) async {
     final body = jsonDecode(await req.readAsString());
     final hashed = DBCrypt().hashpw(body['password'], DBCrypt().gensalt());
-    await connection.execute(Sql.named('INSERT INTO users (email, password, first_name, last_name, major, graduation_year, role) VALUES (@email, @pass, @f, @l, @m, @g, @r)'), 
-    parameters: {'email': body['email'], 'pass': hashed, 'f': body['firstName'], 'l': body['lastName'], 'm': body['major'], 'g': body['graduationYear'], 'r': 'alumni'});
+    await connection.execute(Sql.named('INSERT INTO users (email, password, first_name, last_name, major, graduation_year, phone_number, role, gender, dob, student_id, education_level, industry, job_position, workplace) VALUES (@email, @pass, @f, @l, @m, @g, @ph, @r, @gen, @dob, @sid, @edu, @ind, @job, @company)'), 
+    parameters: {
+      'email': body['email'], 'pass': hashed, 'f': body['firstName'], 'l': body['lastName'], 
+      'm': body['major'], 'g': body['graduationYear'], 'ph': body['phoneNumber'], 'r': 'alumni',
+      'gen': body['gender'], 'dob': body['dob'], 'sid': body['studentId'], 'edu': body['educationLevel'],
+      'ind': body['industry'], 'job': body['jobTitle'], 'company': body['companyName']
+    });
     return Response.ok(jsonEncode({'message': 'Registered'}));
   });
 
   mainRouter.put('/users/<id>', (Request req, String id) async {
     final body = jsonDecode(await req.readAsString());
-    await connection.execute(Sql.named('UPDATE users SET first_name = @f, last_name = @l, phone_number = @ph, major = @m, graduation_year = @g, work_status = @ws, workplace = @wp, job_position = @pos WHERE id = @id'),
-    parameters: {'id': int.parse(id), 'f': body['firstName'], 'l': body['lastName'], 'ph': body['phoneNumber'], 'm': body['major'], 'g': body['graduationYear'], 'ws': body['workStatus'], 'wp': body['workplace'], 'pos': body['jobPosition']});
+    await connection.execute(Sql.named('UPDATE users SET first_name = @f, last_name = @l, phone_number = @ph, major = @m, graduation_year = @g, work_status = @ws, workplace = @wp, job_position = @pos, gender = @gen, dob = @dob, student_id = @sid, education_level = @edu, industry = @ind WHERE id = @id'),
+    parameters: {
+      'id': int.parse(id), 'f': body['firstName'], 'l': body['lastName'], 'ph': body['phoneNumber'], 
+      'm': body['major'], 'g': body['graduationYear'], 'ws': body['workStatus'], 'wp': body['workplace'], 
+      'pos': body['jobPosition'], 'gen': body['gender'], 'dob': body['dob'], 'sid': body['studentId'], 
+      'edu': body['educationLevel'], 'ind': body['industry']
+    });
     return Response.ok(jsonEncode({'message': 'Updated'}));
   });
 

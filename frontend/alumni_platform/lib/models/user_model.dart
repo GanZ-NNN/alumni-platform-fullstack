@@ -7,12 +7,16 @@ class UserModel {
   final String status;
   final String? major;
   final String? graduationYear;
-  final String? phoneNumber; // ເພີ່ມອັນນີ້
+  final String? phoneNumber;
   final String? profileImageUrl;
-  final String workStatus;   // 'Working', 'Unemployed', 'Studying'
-  final String? workplace;   // ບ່ອນເຮັດວຽກ
-  final String? jobPosition; // ຕຳແໜ່ງ
-
+  final String workStatus;
+  final String? workplace;
+  final String? jobPosition;
+  final String? gender;
+  final String? dob;
+  final String? studentId;
+  final String? educationLevel;
+  final String? industry;
 
   UserModel({
     required this.id,
@@ -23,11 +27,16 @@ class UserModel {
     required this.status,
     this.major,
     this.graduationYear,
-    this.phoneNumber, // ເພີ່ມ
+    this.phoneNumber,
     this.profileImageUrl,
     required this.workStatus,
     this.workplace,
     this.jobPosition,
+    this.gender,
+    this.dob,
+    this.studentId,
+    this.educationLevel,
+    this.industry,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> json) {
@@ -40,15 +49,19 @@ class UserModel {
       status: json['status'] ?? 'pending',
       major: json['major'],
       graduationYear: json['graduationYear']?.toString(),
-      phoneNumber: json['phoneNumber'] ?? '', 
+      phoneNumber: json['phoneNumber'],
       profileImageUrl: json['profileImageUrl'],
       workStatus: json['workStatus'] ?? 'Unemployed',
       workplace: json['workplace'],
       jobPosition: json['jobPosition'],
+      gender: json['gender'],
+      dob: json['dob'],
+      studentId: json['studentId'],
+      educationLevel: json['educationLevel'],
+      industry: json['industry'],
     );
   }
 
-  // ແປງຈາກ Object ໄປເປັນ JSON (ຖ້າຈຳເປັນ)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -61,6 +74,14 @@ class UserModel {
       'graduationYear': graduationYear,
       'phoneNumber': phoneNumber,
       'profileImageUrl': profileImageUrl,
+      'workStatus': workStatus,
+      'workplace': workplace,
+      'jobPosition': jobPosition,
+      'gender': gender,
+      'dob': dob,
+      'studentId': studentId,
+      'educationLevel': educationLevel,
+      'industry': industry,
     };
   }
 }

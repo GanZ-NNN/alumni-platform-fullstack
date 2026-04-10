@@ -5,9 +5,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_service.dart';
-import '../auth/login_screen.dart';
 import 'notification_list_screen.dart';
-import 'settings_screen.dart'; // ✅ Import SettingsScreen
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final UserModel user; 
@@ -44,164 +43,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _showEditDialog() {
-    final fNameCtrl = TextEditingController(text: currentUser.firstName);
-    final lNameCtrl = TextEditingController(text: currentUser.lastName);
-    final phoneCtrl = TextEditingController(text: currentUser.phoneNumber);
-    final majorCtrl = TextEditingController(text: currentUser.major);
-    final gradCtrl = TextEditingController(text: currentUser.graduationYear);
-    final workplaceCtrl = TextEditingController(text: currentUser.workplace);
-    final positionCtrl = TextEditingController(text: currentUser.jobPosition);
-    String selectedStatus = currentUser.workStatus; 
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Edit Profile', style: TextStyle(fontFamily: 'Google Sans')),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: fNameCtrl, decoration: const InputDecoration(labelText: 'First Name')),
-                TextField(controller: lNameCtrl, decoration: const InputDecoration(labelText: 'Last Name')),
-                TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Phone Number')),
-                TextField(controller: majorCtrl, decoration: const InputDecoration(labelText: 'Major')),
-                TextField(controller: gradCtrl, decoration: const InputDecoration(labelText: 'Graduation Year')),
-                const SizedBox(height: 15),
-                const Divider(),
-                DropdownButtonFormField<String>(
-                  value: selectedStatus,
-                  decoration: const InputDecoration(labelText: 'Work Status'),
-                  items: ['Working', 'Unemployed', 'Studying']
-                      .map((label) => DropdownMenuItem(value: label, child: Text(label)))
-                      .toList(),
-                  onChanged: (val) {
-                    setDialogState(() => selectedStatus = val!);
-                  },
-                ),
-                TextField(
-                  controller: workplaceCtrl, 
-                  decoration: const InputDecoration(labelText: 'Workplace / Company'),
-                  enabled: selectedStatus == 'Working',
-                ),
-                TextField(
-                  controller: positionCtrl, 
-                  decoration: const InputDecoration(labelText: 'Job Position'),
-                  enabled: selectedStatus == 'Working',
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                final updatedUser = UserModel(
-                  id: currentUser.id,
-                  email: currentUser.email,
-                  role: currentUser.role,
-                  status: currentUser.status,
-                  firstName: fNameCtrl.text,
-                  lastName: lNameCtrl.text,
-                  phoneNumber: phoneCtrl.text,
-                  major: fNameCtrl.text.isNotEmpty ? majorCtrl.text : currentUser.major,
-                  graduationYear: gradCtrl.text,
-                  profileImageUrl: currentUser.profileImageUrl,
-                  workStatus: selectedStatus, 
-                  workplace: workplaceCtrl.text,
-                  jobPosition: positionCtrl.text,
-                );
-
-                final success = await _authService.updateProfile(updatedUser);
-
-                if (success) {
-                  setState(() {
-                    currentUser = updatedUser;
-                  });
-                  widget.onUserUpdated(updatedUser);
-                  if (!mounted) return;
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Updated!')));
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildProfileHeader(),
+            const SizedBox(height: 60),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: _pickAndUploadImage,
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 55,
-                          backgroundColor: Colors.blueGrey[100],
-                          backgroundImage: (currentUser.profileImageUrl != null && currentUser.profileImageUrl!.isNotEmpty)
-                              ? NetworkImage(currentUser.profileImageUrl!) as ImageProvider
-                              : null,
-                          child: (currentUser.profileImageUrl == null || currentUser.profileImageUrl!.isEmpty)
-                              ? const Icon(Icons.person, size: 50, color: Colors.white)
-                              : null,
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(color: Color(0xFF1A56BE), shape: BoxShape.circle),
-                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Text('${currentUser.firstName} ${currentUser.lastName ?? ''}',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
-                  Text(currentUser.email, style: const TextStyle(color: Colors.grey, fontFamily: 'Google Sans')),
-                  
-                  const SizedBox(height: 25),
-                  
-                  _buildInfoTile(Icons.school, 'Major', currentUser.major ?? '-'),
-                  _buildInfoTile(Icons.date_range, 'Graduation Year', currentUser.graduationYear ?? '-'),
-                  _buildInfoTile(Icons.phone, 'Phone', currentUser.phoneNumber ?? '-'),
-                  _buildInfoTile(Icons.work_history, 'Work Status', currentUser.workStatus),
-                  
-                  if (currentUser.workStatus == 'Working') ...[
-                    _buildInfoTile(Icons.business, 'Workplace', currentUser.workplace ?? '-'),
-                    _buildInfoTile(Icons.assignment_ind, 'Position', currentUser.jobPosition ?? '-'),
-                  ],
-
-                  const SizedBox(height: 30),
-                  ElevatedButton.icon(
-                    onPressed: _showEditDialog,
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Edit Profile Information', style: TextStyle(fontFamily: 'Google Sans', fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A56BE),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 55),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      elevation: 0,
-                    ),
-                  ),
-                  const SizedBox(height: 50),
+                  _buildStatsRow(),
+                  const SizedBox(height: 32),
+                  _buildSection('Personal Details', [
+                    _buildDetailItem(Icons.person_outline_rounded, 'Full Name', '${currentUser.firstName} ${currentUser.lastName ?? ''}'),
+                    _buildDetailItem(Icons.wc_rounded, 'Gender', currentUser.gender ?? 'Not Specified'),
+                    _buildDetailItem(Icons.cake_outlined, 'Date of Birth', currentUser.dob ?? 'Not Specified'),
+                    _buildDetailItem(Icons.phone_android_rounded, 'Phone Number', currentUser.phoneNumber ?? 'Not Specified'),
+                    _buildDetailItem(Icons.alternate_email_rounded, 'Email Address', currentUser.email),
+                  ]),
+                  const SizedBox(height: 24),
+                  _buildSection('Education Background', [
+                    _buildDetailItem(Icons.badge_outlined, 'Student ID', currentUser.studentId ?? 'Not Specified'),
+                    _buildDetailItem(Icons.category_rounded, 'Department (Major)', currentUser.major ?? 'Not Specified'),
+                    _buildDetailItem(Icons.school_outlined, 'Education Level', currentUser.educationLevel ?? 'Not Specified'),
+                    _buildDetailItem(Icons.event_available_rounded, 'Graduation Year', currentUser.graduationYear ?? 'Not Specified'),
+                  ]),
+                  const SizedBox(height: 24),
+                  _buildSection('Current Work', [
+                    _buildDetailItem(Icons.work_outline_rounded, 'Job Status', currentUser.workStatus),
+                    if (currentUser.workStatus == 'Working') ...[
+                      _buildDetailItem(Icons.badge_rounded, 'Job Title', currentUser.jobPosition ?? 'Not Specified'),
+                      _buildDetailItem(Icons.business_rounded, 'Company', currentUser.workplace ?? 'Not Specified'),
+                      _buildDetailItem(Icons.domain_rounded, 'Industry', currentUser.industry ?? 'Not Specified'),
+                    ],
+                  ]),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -211,52 +91,155 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildProfileHeader() {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        // --- Banner ---
+        Container(
+          height: 180,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1A56BE), Color(0xFF3B82F6)],
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(32),
+              bottomRight: Radius.circular(32),
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationListScreen())),
+                        icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 26),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsScreen(user: currentUser))),
+                        icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 26),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        // --- Floating Profile Pic ---
+        Positioned(
+          top: 120,
+          child: Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                child: GestureDetector(
+                  onTap: _pickAndUploadImage,
+                  child: CircleAvatar(
+                    radius: 56,
+                    backgroundColor: const Color(0xFFF1F5F9),
+                    backgroundImage: (currentUser.profileImageUrl != null && currentUser.profileImageUrl!.isNotEmpty)
+                        ? NetworkImage(currentUser.profileImageUrl!) as ImageProvider
+                        : null,
+                    child: (currentUser.profileImageUrl == null || currentUser.profileImageUrl!.isEmpty)
+                        ? const Icon(Icons.person_rounded, size: 50, color: Color(0xFF94A3B8))
+                        : null,
+                  ),
+                ),
+              ),
+              if (currentUser.status == 'active')
+                Positioned(
+                  bottom: 8,
+                  right: 4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(color: Color(0xFF22C55E), shape: BoxShape.circle),
+                    child: const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildStatItem('Connections', '124'),
+        _buildStatItem('Works', '18'),
+        _buildStatItem('Activities', '42'),
+      ],
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontFamily: 'Google Sans')),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontFamily: 'Google Sans')),
+      ],
+    );
+  }
+
+  Widget _buildSection(String title, List<Widget> children) {
     return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 10, 
-        left: 20, 
-        right: 20, 
-        bottom: 25
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 8))],
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A56BE),
-        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontFamily: 'Google Sans')),
+          const SizedBox(height: 20),
+          ...children,
+        ],
       ),
+    );
+  }
+
+  Widget _buildDetailItem(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         children: [
-          const CircleAvatar(
-            backgroundColor: Colors.white,
-            child: Text('FNS', style: TextStyle(color: Color(0xFF1A56BE), fontWeight: FontWeight.bold)),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: const Color(0xFF1A56BE), size: 18),
           ),
-          const SizedBox(width: 12),
-          const Expanded(
+          const SizedBox(width: 16),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('ຂໍ້ມູນສ່ວນຕົວ', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
-                Text('ຈັດການໂປຣໄຟລ໌ຂອງທ່ານ', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Google Sans')),
+                Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500, fontFamily: 'Google Sans')),
+                const SizedBox(height: 2),
+                Text(value, style: const TextStyle(fontSize: 14, color: Color(0xFF334155), fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
               ],
             ),
-          ),
-          // ✅ Notification Icon (Previously existing)
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.white, size: 28),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationListScreen())),
-          ),
-          // ✅ Settings Icon Button (New)
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: const Icon(Icons.settings, color: Colors.grey, size: 20),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context, 
-                MaterialPageRoute(builder: (_) => SettingsScreen(user: currentUser))
-              );
-            },
           ),
         ],
       ),
@@ -264,59 +247,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _pickAndUploadImage() async {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024, imageQuality: 85);
-      if (picked == null) return;
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024, imageQuality: 85);
+    if (picked == null) return;
 
-      String? url;
-      if (kIsWeb) {
-        try {
-          final bytes = await picked.readAsBytes();
-          url = await _authService.uploadImage(bytes, picked.name);
-          if (url != null) await _authService.updateAvatar(currentUser.id, url);
-        } catch (e) { debugPrint('Web upload error: $e'); }
-      } else {
-        final file = File(picked.path);
-        url = await _userService.uploadAndSetAvatar(file, currentUser.id);
-      }
+    String? url;
+    if (kIsWeb) {
+      try {
+        final bytes = await picked.readAsBytes();
+        url = await _authService.uploadImage(bytes, picked.name);
+        if (url != null) await _authService.updateAvatar(currentUser.id, url);
+      } catch (e) { debugPrint('Web upload error: $e'); }
+    } else {
+      final file = File(picked.path);
+      url = await _userService.uploadAndSetAvatar(file, currentUser.id);
+    }
 
-      if (url != null && mounted) {
-        setState(() {
-          currentUser = UserModel(
-            id: currentUser.id,
-            email: currentUser.email,
-            role: currentUser.role,
-            status: currentUser.status,
-            firstName: currentUser.firstName,
-            lastName: currentUser.lastName,
-            phoneNumber: currentUser.phoneNumber,
-            major: currentUser.major,
-            graduationYear: currentUser.graduationYear,
-            profileImageUrl: url,
-            workStatus: currentUser.workStatus,
-            workplace: currentUser.workplace,
-            jobPosition: currentUser.jobPosition,
-          );
-        });
-        widget.onUserUpdated(currentUser);
-      }
-  }
-
-  Widget _buildInfoTile(IconData icon, String title, String value) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: Colors.grey[100]!)),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: const Color(0xFFF5F7FB), borderRadius: BorderRadius.circular(10)),
-          child: Icon(icon, color: const Color(0xFF1A56BE), size: 20),
-        ),
-        title: Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Google Sans')),
-        subtitle: Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, fontFamily: 'Google Sans', color: Colors.black87)),
-      ),
-    );
+    if (url != null && mounted) {
+      setState(() {
+        currentUser = UserModel(
+          id: currentUser.id,
+          email: currentUser.email,
+          role: currentUser.role,
+          status: currentUser.status,
+          firstName: currentUser.firstName,
+          lastName: currentUser.lastName,
+          phoneNumber: currentUser.phoneNumber,
+          major: currentUser.major,
+          graduationYear: currentUser.graduationYear,
+          profileImageUrl: url,
+          workStatus: currentUser.workStatus,
+          workplace: currentUser.workplace,
+          jobPosition: currentUser.jobPosition,
+          gender: currentUser.gender,
+          dob: currentUser.dob,
+          studentId: currentUser.studentId,
+          educationLevel: currentUser.educationLevel,
+          industry: currentUser.industry,
+        );
+      });
+      widget.onUserUpdated(currentUser);
+    }
   }
 }
