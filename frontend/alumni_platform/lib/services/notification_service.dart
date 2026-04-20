@@ -1,15 +1,18 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/notification_model.dart';
-import 'api_config.dart';
+import 'api_client.dart';
 
 class NotificationService {
-  String get baseUrl => ApiConfig.baseUrl;
+  NotificationService({ApiClient? apiClient})
+    : _apiClient = apiClient ?? ApiClient();
+
+  final ApiClient _apiClient;
 
   Future<List<NotificationModel>> getNotifications() async {
     try {
-      final res = await http.get(Uri.parse('$baseUrl/notifications'))
+      final res = await _apiClient
+          .get('/notifications')
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         List data = jsonDecode(res.body);
@@ -24,14 +27,17 @@ class NotificationService {
 
   Future<bool> sendNotification(String title, String message) async {
     try {
-      final res = await http.post(
-        Uri.parse('$baseUrl/admin/notifications'),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-role': 'admin'
-        },
-        body: jsonEncode({'title': title, 'message': message}),
-      ).timeout(const Duration(seconds: 10));
+      final res = await _apiClient
+          .post(
+            '/admin/notifications',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-role': 'admin',
+            },
+            body: jsonEncode({'title': title, 'message': message}),
+            withAuth: true,
+          )
+          .timeout(const Duration(seconds: 10));
       return res.statusCode == 200;
     } catch (e) {
       debugPrint('Error sendNotification: $e');

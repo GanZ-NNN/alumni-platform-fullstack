@@ -1,22 +1,52 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
+import 'api_client.dart';
 import 'api_config.dart';
+import 'token_storage.dart';
 
 class AuthService {
-  static String get baseUrl => ApiConfig.baseUrl;
+  AuthService({ApiClient? apiClient, TokenStorage? tokenStorage})
+    : _apiClient = apiClient ?? ApiClient(),
+      _tokenStorage = tokenStorage ?? TokenStorage();
+
+  final ApiClient _apiClient;
+  final TokenStorage _tokenStorage;
 
   Future<UserModel?> login(String email, String password) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/login'),
+      final response = await _apiClient.post(
+        '/auth/login',
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
-        return UserModel.fromMap(jsonDecode(response.body));
+        final payload = jsonDecode(response.body) as Map<String, dynamic>;
+        final data =
+            payload['data'] is Map<String, dynamic>
+                ? payload['data'] as Map<String, dynamic>
+                : payload;
+        final accessToken = data['accessToken']?.toString();
+        final refreshToken = data['refreshToken']?.toString();
+        if (accessToken != null &&
+            accessToken.isNotEmpty &&
+            refreshToken != null &&
+            refreshToken.isNotEmpty) {
+          await _tokenStorage.saveTokens(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          );
+        }
+        final userData =
+            data['user'] is Map<String, dynamic>
+                ? data['user'] as Map<String, dynamic>
+                : data;
+        return UserModel.fromMap(userData);
       }
-    } catch (e) { print('Login Error: $e'); }
+    } catch (e) {
+      print('Login Error: $e');
+    }
     return null;
   }
 
@@ -37,8 +67,9 @@ class AuthService {
     required String companyName,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/register'),
+      final response = await _apiClient.post(
+        '/auth/register',
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -57,40 +88,59 @@ class AuthService {
         }),
       );
       return response.statusCode == 200;
-    } catch (e) { print('Register Error: $e'); }
+    } catch (e) {
+      print('Register Error: $e');
+    }
     return false;
   }
 
   Future<bool> updateProfile(UserModel user) async {
     try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/users/${user.id}'),
+      final response = await _apiClient.put(
+        '/users/${user.id}',
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(user.toMap()),
+        withAuth: true,
       );
       return response.statusCode == 200;
-    } catch (e) { print('Update Error: $e'); }
+    } catch (e) {
+      print('Update Error: $e');
+    }
     return false;
   }
 
   Future<String?> uploadImage(List<int> bytes, String fileName) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
-      request.files.add(http.MultipartFile.fromBytes('file', bytes, filename: fileName));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${ApiConfig.baseUrl}/upload'),
+      );
+      request.files.add(
+        http.MultipartFile.fromBytes('file', bytes, filename: fileName),
+      );
       request.fields['category'] = 'profile';
-      
+
       var response = await request.send();
       if (response.statusCode == 200) {
         final resBody = await response.stream.bytesToString();
         return jsonDecode(resBody)['url'];
       }
-    } catch (e) { print('Upload error: $e'); }
+    } catch (e) {
+      print('Upload error: $e');
+    }
     return null;
   }
 
   Future<void> updateAvatar(int userId, String url) async {
-    await http.put(
-      Uri.parse('$baseUrl/users/$userId/avatar'),
+    await _apiClient.put(
+      '/users/$userId/avatar',
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'profileImageUrl': url}),
+      withAuth: true,
     );
+  }
+
+  Future<void> logout() async {
+    await _tokenStorage.clearTokens();
   }
 }

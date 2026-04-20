@@ -4,20 +4,26 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:http_parser/http_parser.dart';
 import '../models/user_model.dart';
+import 'api_client.dart';
 import 'api_config.dart';
 
 class UserService {
-  String get baseUrl => ApiConfig.baseUrl;
+  UserService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
 
-  Future<List<UserModel>> searchAlumni({String name = '', String major = '', String year = ''}) async {
+  final ApiClient _apiClient;
+
+  Future<List<UserModel>> searchAlumni({
+    String name = '',
+    String major = '',
+    String year = '',
+  }) async {
     try {
-      final uri = Uri.parse('$baseUrl/alumni').replace(queryParameters: {
-        'name': name,
-        'major': major,
-        'year': year,
-      });
-
-      final response = await http.get(uri).timeout(const Duration(seconds: 10));
+      final response = await _apiClient
+          .get(
+            '/alumni',
+            queryParameters: {'name': name, 'major': major, 'year': year},
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
@@ -32,7 +38,7 @@ class UserService {
 
   Future<String?> uploadImage(File imageFile) async {
     try {
-      final uri = Uri.parse('$baseUrl/upload');
+      final uri = Uri.parse('${ApiConfig.baseUrl}/upload');
       final request = http.MultipartRequest('POST', uri);
       request.fields['category'] = 'profile';
 
@@ -49,7 +55,9 @@ class UserService {
       );
       request.files.add(multipartFile);
 
-      final streamed = await request.send().timeout(const Duration(seconds: 20));
+      final streamed = await request.send().timeout(
+        const Duration(seconds: 20),
+      );
       final respStr = await streamed.stream.bytesToString();
       if (streamed.statusCode == 200) {
         final data = jsonDecode(respStr);
@@ -65,12 +73,14 @@ class UserService {
 
   Future<bool> setAvatar(int userId, String imageUrl) async {
     try {
-      final uri = Uri.parse('$baseUrl/users/$userId/avatar');
-      final resp = await http.put(
-        uri, 
-        headers: {'Content-Type': 'application/json'}, 
-        body: jsonEncode({'profileImageUrl': imageUrl})
-      ).timeout(const Duration(seconds: 10));
+      final resp = await _apiClient
+          .put(
+            '/users/$userId/avatar',
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'profileImageUrl': imageUrl}),
+            withAuth: true,
+          )
+          .timeout(const Duration(seconds: 10));
       return resp.statusCode == 200;
     } catch (e) {
       debugPrint('Set avatar error: $e');

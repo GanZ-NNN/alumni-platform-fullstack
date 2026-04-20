@@ -1,11 +1,12 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/post_model.dart';
-import 'api_config.dart';
+import 'api_client.dart';
 
 class PostService {
-  String get baseUrl => ApiConfig.baseUrl;
+  PostService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+
+  final ApiClient _apiClient;
 
   // Header ສໍາລັບ Admin (ເພາະຕ້ອງຜ່ານ Middleware isAdmin)
   Map<String, String> get _adminHeaders => {
@@ -15,11 +16,10 @@ class PostService {
 
   Future<List<PostModel>> getAdminPosts() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/admin/posts'), 
-        headers: _adminHeaders,
-      ).timeout(const Duration(seconds: 10));
-      
+      final response = await _apiClient
+          .get('/admin/posts', headers: _adminHeaders, withAuth: true)
+          .timeout(const Duration(seconds: 10));
+
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         return data.map((item) => PostModel.fromMap(item)).toList();
@@ -35,7 +35,8 @@ class PostService {
 
   Future<List<PostModel>> getPosts() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/posts'))
+      final response = await _apiClient
+          .get('/posts')
           .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
@@ -56,17 +57,20 @@ class PostService {
     String? imageUrl,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/admin/posts'),
-        headers: _adminHeaders,
-        body: jsonEncode({
-          'authorId': authorId,
-          'title': title,
-          'content': content,
-          'type': type,
-          'imageUrl': imageUrl ?? '',
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await _apiClient
+          .post(
+            '/admin/posts',
+            headers: _adminHeaders,
+            body: jsonEncode({
+              'authorId': authorId,
+              'title': title,
+              'content': content,
+              'type': type,
+              'imageUrl': imageUrl ?? '',
+            }),
+            withAuth: true,
+          )
+          .timeout(const Duration(seconds: 15));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error createPost: $e');
@@ -76,10 +80,9 @@ class PostService {
 
   Future<bool> deletePost(int id) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/admin/posts/$id'), 
-        headers: _adminHeaders,
-      ).timeout(const Duration(seconds: 10));
+      final response = await _apiClient
+          .delete('/admin/posts/$id', headers: _adminHeaders, withAuth: true)
+          .timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error deletePost: $e');
@@ -95,16 +98,19 @@ class PostService {
     String? imageUrl,
   }) async {
     try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/admin/posts/$id'),
-        headers: _adminHeaders,
-        body: jsonEncode({
-          'title': title,
-          'content': content,
-          'type': type,
-          'imageUrl': imageUrl ?? '',
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await _apiClient
+          .put(
+            '/admin/posts/$id',
+            headers: _adminHeaders,
+            body: jsonEncode({
+              'title': title,
+              'content': content,
+              'type': type,
+              'imageUrl': imageUrl ?? '',
+            }),
+            withAuth: true,
+          )
+          .timeout(const Duration(seconds: 15));
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error updatePost: $e');
