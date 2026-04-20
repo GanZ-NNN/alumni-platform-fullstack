@@ -13,7 +13,7 @@ class JwtService {
   }
 
   static String generateRefreshToken(String userId) {
-    final jwt = JWT({'userId': userId});
+    final jwt = JWT({'userId': userId, 'tokenType': 'refresh'});
     return jwt.sign(
       SecretKey(_secret),
       expiresIn: Duration(seconds: AppConfig.refreshTokenExpiration),
@@ -35,10 +35,10 @@ class JwtService {
 
   static String? refreshAccessToken(String refreshToken) {
     final payload = verifyToken(refreshToken);
-    if (payload != null && payload.containsKey('userId')) {
-      // Re-generate access token with appropriate claims.
-      // In a real app, you would fetch user data from DB here.
-      return generateToken({'userId': payload['userId'], 'role': 'alumni'}); 
+    if (payload != null &&
+        payload.containsKey('userId') &&
+        payload['tokenType']?.toString() == 'refresh') {
+      return payload['userId']?.toString();
     }
     return null;
   }

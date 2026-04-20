@@ -3,14 +3,30 @@ import 'package:shelf/shelf.dart';
 Middleware loggerMiddleware() {
   return (Handler innerHandler) {
     return (Request request) async {
+      final requestId = DateTime.now().microsecondsSinceEpoch.toString();
       final startTime = DateTime.now();
-      final response = await innerHandler(request);
+      Response response;
+      try {
+        response = await innerHandler(request);
+      } catch (_) {
+        final duration = DateTime.now().difference(startTime);
+        print(
+          '[${DateTime.now().toIso8601String()}] '
+          'request_id=$requestId method=${request.method} '
+          'path=${request.requestedUri.path} status=500 duration_ms=${duration.inMilliseconds}',
+        );
+        rethrow;
+      }
+
       final duration = DateTime.now().difference(startTime);
+      print(
+        '[${DateTime.now().toIso8601String()}] '
+        'request_id=$requestId method=${request.method} '
+        'path=${request.requestedUri.path} status=${response.statusCode} '
+        'duration_ms=${duration.inMilliseconds}',
+      );
 
-      print('[${DateTime.now().toIso8601String()}] ${request.method} ${request.requestedUri.path} '
-          '(${response.statusCode}) took ${duration.inMilliseconds}ms');
-
-      return response;
+      return response.change(headers: {'x-request-id': requestId});
     };
   };
 }

@@ -20,15 +20,16 @@ Future<void> main() async {
   _setupDirectories();
 
   // Static file handler for uploads folder
-  final staticHandler = createStaticHandler('uploads', defaultDocument: 'index.html');
+  final staticHandler = createStaticHandler(
+    'uploads',
+    defaultDocument: 'index.html',
+  );
 
   // Main Router instance
   final apiRouter = ApiRouter().router;
 
   // Mount API and static file routes
-  final cascade = Cascade()
-      .add(apiRouter.call)
-      .add(staticHandler);
+  final cascade = Cascade().add(apiRouter.call).add(staticHandler);
 
   // Global Pipeline: middleware applied in reverse order of addition
   final handler = Pipeline()
@@ -38,17 +39,27 @@ Future<void> main() async {
       .addHandler(cascade.handler);
 
   // Start Server
+  final bindAddress =
+      InternetAddress.tryParse(AppConfig.host) ?? InternetAddress.anyIPv4;
   final server = await io.serve(
     handler,
-    InternetAddress.anyIPv4,
+    bindAddress,
     int.parse(AppConfig.port),
   );
 
-  print('🚀 Server listening at http://${server.address.address}:${server.port}');
+  print(
+    '🚀 Server listening at http://${server.address.address}:${server.port}',
+  );
 }
 
 void _setupDirectories() {
-  if (!Directory('uploads').existsSync()) Directory('uploads').createSync();
-  if (!Directory('uploads/profiles').existsSync()) Directory('uploads/profiles').createSync();
-  if (!Directory('uploads/posts').existsSync()) Directory('uploads/posts').createSync();
+  if (!Directory('uploads').existsSync()) {
+    Directory('uploads').createSync();
+  }
+  if (!Directory('uploads/profiles').existsSync()) {
+    Directory('uploads/profiles').createSync();
+  }
+  if (!Directory('uploads/posts').existsSync()) {
+    Directory('uploads/posts').createSync();
+  }
 }

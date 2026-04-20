@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import '../error/failure.dart';
+import '../http/api_response.dart';
 
 Middleware errorHandlerMiddleware() {
   return (Handler innerHandler) {
@@ -12,16 +12,16 @@ Middleware errorHandlerMiddleware() {
         print(stackTrace);
 
         if (e is Failure) {
-          return Response(
-            e.statusCode,
-            body: jsonEncode({'error': e.message}),
-            headers: {'Content-Type': 'application/json'},
-          );
+          return ApiResponse.json(e.statusCode, {
+            'success': false,
+            'error': {'code': 'REQUEST_FAILED', 'message': e.message},
+          });
         }
 
-        return Response.internalServerError(
-          body: jsonEncode({'error': 'An internal server error occurred.'}),
-          headers: {'Content-Type': 'application/json'},
+        return ApiResponse.error(
+          500,
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'An internal server error occurred.',
         );
       }
     };

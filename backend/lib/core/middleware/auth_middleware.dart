@@ -1,15 +1,16 @@
-import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import '../auth/jwt_service.dart';
+import '../http/api_response.dart';
 
 Middleware authMiddleware() {
   return (Handler innerHandler) {
     return (Request request) async {
       final authHeader = request.headers['Authorization'];
       if (authHeader == null || !authHeader.startsWith('Bearer ')) {
-        return Response.forbidden(
-          jsonEncode({'error': 'Unauthorized: Missing or invalid token'}),
-          headers: {'Content-Type': 'application/json'},
+        return ApiResponse.error(
+          401,
+          code: 'UNAUTHORIZED',
+          message: 'Missing or invalid bearer token.',
         );
       }
 
@@ -17,9 +18,10 @@ Middleware authMiddleware() {
       try {
         final payload = JwtService.verifyToken(token);
         if (payload == null) {
-          return Response.forbidden(
-            jsonEncode({'error': 'Unauthorized: Invalid token'}),
-            headers: {'Content-Type': 'application/json'},
+          return ApiResponse.error(
+            401,
+            code: 'UNAUTHORIZED',
+            message: 'Invalid token.',
           );
         }
 
@@ -27,9 +29,11 @@ Middleware authMiddleware() {
         final updatedRequest = request.change(context: {'user': payload});
         return await innerHandler(updatedRequest);
       } catch (e) {
-        return Response.forbidden(
-          jsonEncode({'error': 'Unauthorized: $e'}),
-          headers: {'Content-Type': 'application/json'},
+        return ApiResponse.error(
+          401,
+          code: 'UNAUTHORIZED',
+          message: 'Token verification failed.',
+          details: {'reason': e.toString()},
         );
       }
     };
@@ -43,9 +47,10 @@ Middleware isAdmin() {
       final role = user?['role']?.toString().toLowerCase();
 
       if (role != 'admin') {
-        return Response.forbidden(
-          jsonEncode({'error': 'Access Denied: Admin only'}),
-          headers: {'Content-Type': 'application/json'},
+        return ApiResponse.error(
+          403,
+          code: 'ACCESS_DENIED',
+          message: 'Admin access required.',
         );
       }
       return null;
