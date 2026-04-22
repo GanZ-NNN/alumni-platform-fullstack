@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 class ImageHelper {
   // ✅ ຕົວຊ່ວຍຈັດການຮູບພາບ ເພື່ອບໍ່ໃຫ້ມັນ Error ຖ້າ Server ຕາຍ ຫຼື ຫາບໍ່ເຫັນ
-  static Widget networkImage(String? url, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+  static Widget networkImage(
+    String? url, {
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.cover,
+  }) {
     if (url == null || url.isEmpty) {
       return _buildPlaceholder(width, height);
     }

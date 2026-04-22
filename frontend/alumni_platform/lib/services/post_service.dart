@@ -8,16 +8,10 @@ class PostService {
 
   final ApiClient _apiClient;
 
-  // Header ສໍາລັບ Admin (ເພາະຕ້ອງຜ່ານ Middleware isAdmin)
-  Map<String, String> get _adminHeaders => {
-    'Content-Type': 'application/json',
-    'x-user-role': 'admin',
-  };
-
   Future<List<PostModel>> getAdminPosts() async {
     try {
       final response = await _apiClient
-          .get('/admin/posts', headers: _adminHeaders, withAuth: true)
+          .get('/admin/posts', withAuth: true)
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -60,7 +54,7 @@ class PostService {
       final response = await _apiClient
           .post(
             '/admin/posts',
-            headers: _adminHeaders,
+            headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'authorId': authorId,
               'title': title,
@@ -81,7 +75,7 @@ class PostService {
   Future<bool> deletePost(int id) async {
     try {
       final response = await _apiClient
-          .delete('/admin/posts/$id', headers: _adminHeaders, withAuth: true)
+          .delete('/admin/posts/$id', withAuth: true)
           .timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
@@ -101,7 +95,7 @@ class PostService {
       final response = await _apiClient
           .put(
             '/admin/posts/$id',
-            headers: _adminHeaders,
+            headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'title': title,
               'content': content,

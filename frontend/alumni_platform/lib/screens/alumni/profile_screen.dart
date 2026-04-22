@@ -9,13 +9,13 @@ import 'notification_list_screen.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final UserModel user; 
-  final Function(UserModel) onUserUpdated; 
+  final UserModel user;
+  final Function(UserModel) onUserUpdated;
 
   const ProfileScreen({
-    super.key, 
-    required this.user, 
-    required this.onUserUpdated 
+    super.key,
+    required this.user,
+    required this.onUserUpdated,
   });
 
   @override
@@ -59,26 +59,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildStatsRow(),
                   const SizedBox(height: 32),
                   _buildSection('Personal Details', [
-                    _buildDetailItem(Icons.person_outline_rounded, 'Full Name', '${currentUser.firstName} ${currentUser.lastName ?? ''}'),
-                    _buildDetailItem(Icons.wc_rounded, 'Gender', currentUser.gender ?? 'Not Specified'),
-                    _buildDetailItem(Icons.cake_outlined, 'Date of Birth', currentUser.dob ?? 'Not Specified'),
-                    _buildDetailItem(Icons.phone_android_rounded, 'Phone Number', currentUser.phoneNumber ?? 'Not Specified'),
-                    _buildDetailItem(Icons.alternate_email_rounded, 'Email Address', currentUser.email),
+                    _buildDetailItem(
+                      Icons.person_outline_rounded,
+                      'Full Name',
+                      '${currentUser.firstName} ${currentUser.lastName ?? ''}',
+                    ),
+                    _buildDetailItem(
+                      Icons.wc_rounded,
+                      'Gender',
+                      currentUser.gender ?? 'Not Specified',
+                    ),
+                    _buildDetailItem(
+                      Icons.cake_outlined,
+                      'Date of Birth',
+                      currentUser.dob ?? 'Not Specified',
+                    ),
+                    _buildDetailItem(
+                      Icons.phone_android_rounded,
+                      'Phone Number',
+                      currentUser.phoneNumber ?? 'Not Specified',
+                    ),
+                    _buildDetailItem(
+                      Icons.alternate_email_rounded,
+                      'Email Address',
+                      currentUser.email,
+                    ),
                   ]),
                   const SizedBox(height: 24),
                   _buildSection('Education Background', [
-                    _buildDetailItem(Icons.badge_outlined, 'Student ID', currentUser.studentId ?? 'Not Specified'),
-                    _buildDetailItem(Icons.category_rounded, 'Department (Major)', currentUser.major ?? 'Not Specified'),
-                    _buildDetailItem(Icons.school_outlined, 'Education Level', currentUser.educationLevel ?? 'Not Specified'),
-                    _buildDetailItem(Icons.event_available_rounded, 'Graduation Year', currentUser.graduationYear ?? 'Not Specified'),
+                    _buildDetailItem(
+                      Icons.badge_outlined,
+                      'Student ID',
+                      currentUser.studentId ?? 'Not Specified',
+                    ),
+                    _buildDetailItem(
+                      Icons.category_rounded,
+                      'Department (Major)',
+                      currentUser.major ?? 'Not Specified',
+                    ),
+                    _buildDetailItem(
+                      Icons.school_outlined,
+                      'Education Level',
+                      currentUser.educationLevel ?? 'Not Specified',
+                    ),
+                    _buildDetailItem(
+                      Icons.event_available_rounded,
+                      'Graduation Year',
+                      currentUser.graduationYear ?? 'Not Specified',
+                    ),
                   ]),
                   const SizedBox(height: 24),
                   _buildSection('Current Work', [
-                    _buildDetailItem(Icons.work_outline_rounded, 'Job Status', currentUser.workStatus),
+                    _buildDetailItem(
+                      Icons.work_outline_rounded,
+                      'Job Status',
+                      currentUser.workStatus,
+                    ),
                     if (currentUser.workStatus == 'Working') ...[
-                      _buildDetailItem(Icons.badge_rounded, 'Job Title', currentUser.jobPosition ?? 'Not Specified'),
-                      _buildDetailItem(Icons.business_rounded, 'Company', currentUser.workplace ?? 'Not Specified'),
-                      _buildDetailItem(Icons.domain_rounded, 'Industry', currentUser.industry ?? 'Not Specified'),
+                      _buildDetailItem(
+                        Icons.badge_rounded,
+                        'Job Title',
+                        currentUser.jobPosition ?? 'Not Specified',
+                      ),
+                      _buildDetailItem(
+                        Icons.business_rounded,
+                        'Company',
+                        currentUser.workplace ?? 'Not Specified',
+                      ),
+                      _buildDetailItem(
+                        Icons.domain_rounded,
+                        'Industry',
+                        currentUser.industry ?? 'Not Specified',
+                      ),
                     ],
                   ]),
                   const SizedBox(height: 40),
@@ -120,17 +172,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                   Row(
                     children: [
                       IconButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationListScreen())),
-                        icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 26),
+                        onPressed:
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const NotificationListScreen(),
+                              ),
+                            ),
+                        icon: const Icon(
+                          Icons.notifications_none_rounded,
+                          color: Colors.white,
+                          size: 26,
+                        ),
                       ),
                       IconButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsScreen(user: currentUser))),
-                        icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 26),
+                        onPressed:
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => SettingsScreen(user: currentUser),
+                              ),
+                            ),
+                        icon: const Icon(
+                          Icons.settings_outlined,
+                          color: Colors.white,
+                          size: 26,
+                        ),
                       ),
                     ],
                   ),
@@ -139,7 +216,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-        
+
         // --- Floating Profile Pic ---
         Positioned(
           top: 120,
@@ -147,18 +224,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
                 child: GestureDetector(
                   onTap: _pickAndUploadImage,
                   child: CircleAvatar(
                     radius: 56,
                     backgroundColor: const Color(0xFFF1F5F9),
-                    backgroundImage: (currentUser.profileImageUrl != null && currentUser.profileImageUrl!.isNotEmpty)
-                        ? NetworkImage(currentUser.profileImageUrl!) as ImageProvider
-                        : null,
-                    child: (currentUser.profileImageUrl == null || currentUser.profileImageUrl!.isEmpty)
-                        ? const Icon(Icons.person_rounded, size: 50, color: Color(0xFF94A3B8))
-                        : null,
+                    backgroundImage:
+                        (currentUser.profileImageUrl != null &&
+                                currentUser.profileImageUrl!.isNotEmpty)
+                            ? NetworkImage(currentUser.profileImageUrl!)
+                                as ImageProvider
+                            : null,
+                    child:
+                        (currentUser.profileImageUrl == null ||
+                                currentUser.profileImageUrl!.isEmpty)
+                            ? const Icon(
+                              Icons.person_rounded,
+                              size: 50,
+                              color: Color(0xFF94A3B8),
+                            )
+                            : null,
                   ),
                 ),
               ),
@@ -168,8 +257,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   right: 4,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(color: Color(0xFF22C55E), shape: BoxShape.circle),
-                    child: const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF22C55E),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.verified_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
                 ),
             ],
@@ -193,9 +289,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildStatItem(String label, String value) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontFamily: 'Google Sans')),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1E293B),
+            fontFamily: 'Google Sans',
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontFamily: 'Google Sans')),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF64748B),
+            fontFamily: 'Google Sans',
+          ),
+        ),
       ],
     );
   }
@@ -207,12 +318,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 8))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontFamily: 'Google Sans')),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E293B),
+              fontFamily: 'Google Sans',
+            ),
+          ),
           const SizedBox(height: 20),
           ...children,
         ],
@@ -227,7 +352,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, color: const Color(0xFF1A56BE), size: 18),
           ),
           const SizedBox(width: 16),
@@ -235,9 +363,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500, fontFamily: 'Google Sans')),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Google Sans',
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 14, color: Color(0xFF334155), fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF334155),
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Google Sans',
+                  ),
+                ),
               ],
             ),
           ),
@@ -248,7 +392,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickAndUploadImage() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024, imageQuality: 85);
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
     if (picked == null) return;
 
     String? url;
@@ -257,7 +406,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final bytes = await picked.readAsBytes();
         url = await _authService.uploadImage(bytes, picked.name);
         if (url != null) await _authService.updateAvatar(currentUser.id, url);
-      } catch (e) { debugPrint('Web upload error: $e'); }
+      } catch (e) {
+        debugPrint('Web upload error: $e');
+      }
     } else {
       final file = File(picked.path);
       url = await _userService.uploadAndSetAvatar(file, currentUser.id);

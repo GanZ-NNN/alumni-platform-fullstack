@@ -30,10 +30,7 @@ class NotificationService {
       final res = await _apiClient
           .post(
             '/admin/notifications',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-user-role': 'admin',
-            },
+            headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'title': title, 'message': message}),
             withAuth: true,
           )

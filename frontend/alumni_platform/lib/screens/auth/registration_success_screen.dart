@@ -39,7 +39,7 @@ class RegistrationSuccessScreen extends StatelessWidget {
                       color: Colors.black.withOpacity(0.05),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
-                    )
+                    ),
                   ],
                 ),
                 child: Column(
@@ -77,10 +77,16 @@ class RegistrationSuccessScreen extends StatelessWidget {
                     const SizedBox(height: 32),
 
                     // --- Info List ---
-                    _buildInfoItem('Verification typically takes 1-2 business days'),
-                    _buildInfoItem('You will receive an email notification when approved'),
-                    _buildInfoItem('Please check your spam folder if you don\'t see our email'),
-                    
+                    _buildInfoItem(
+                      'Verification typically takes 1-2 business days',
+                    ),
+                    _buildInfoItem(
+                      'You will receive an email notification when approved',
+                    ),
+                    _buildInfoItem(
+                      'Please check your spam folder if you don\'t see our email',
+                    ),
+
                     const SizedBox(height: 40),
 
                     // --- OK Button ---
@@ -91,7 +97,9 @@ class RegistrationSuccessScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
                             (route) => false,
                           );
                         },
@@ -99,7 +107,9 @@ class RegistrationSuccessScreen extends StatelessWidget {
                           backgroundColor: const Color(0xFF1A56BE),
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         child: const Text(
                           'OK',

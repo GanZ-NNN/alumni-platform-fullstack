@@ -4,7 +4,6 @@ import '../../services/auth_service.dart';
 import '../admin/admin_dashboard.dart';
 import '../alumni/home_screen.dart';
 import 'register_screen.dart';
-import '../../models/user_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,16 +47,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (user.role == 'admin') {
         Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => AdminDashboard(adminUser: user)),
-                (route) => false);
+          context,
+          MaterialPageRoute(builder: (_) => AdminDashboard(adminUser: user)),
+          (route) => false,
+        );
       } else {
         if (user.status == 'active') {
           Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => AlumniHomeScreen(currentUser: user)),
-                  (route) => false);
+            context,
+            MaterialPageRoute(
+              builder: (_) => AlumniHomeScreen(currentUser: user),
+            ),
+            (route) => false,
+          );
         } else {
           _showError('ບັນຊີຂອງທ່ານລໍຖ້າການອະນຸມັດຈາກ Admin');
         }
@@ -68,9 +70,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
         content: Text(msg, style: _googleSansStyle),
-        backgroundColor: Colors.redAccent));
+        backgroundColor: Colors.redAccent,
+      ),
+    );
   }
 
   @override
@@ -107,32 +112,38 @@ class _LoginScreenState extends State<LoginScreen> {
                       Container(
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20)),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: const Text(
                           'FNS',
                           style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A56BE),
-                              fontFamily: 'Google Sans'),
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A56BE),
+                            fontFamily: 'Google Sans',
+                          ),
                         ),
                       ),
                       const SizedBox(height: 15),
                       Text(
-                        kIsWeb ? 'Admin Portal Control' : 'ເຄືອຂ່າຍນັກສຶກສາເກົ່າ FNS',
+                        kIsWeb
+                            ? 'Admin Portal Control'
+                            : 'ເຄືອຂ່າຍນັກສຶກສາເກົ່າ FNS',
                         style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Google Sans'),
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Google Sans',
+                        ),
                       ),
                       const Text(
                         'ຄະນະວິທະຍາສາດທຳມະຊາດ',
                         style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                            fontFamily: 'Google Sans'),
+                          color: Colors.white70,
+                          fontSize: 14,
+                          fontFamily: 'Google Sans',
+                        ),
                       ),
                       const SizedBox(height: 50),
                     ],
@@ -142,47 +153,59 @@ class _LoginScreenState extends State<LoginScreen> {
                 // 2. Form Card
                 Container(
                   margin: EdgeInsets.only(
-                      top: screenHeight * 0.35,
-                      left: 25,
-                      right: 25,
-                      bottom: 40),
+                    top: screenHeight * 0.35,
+                    left: 25,
+                    right: 25,
+                    bottom: 40,
+                  ),
                   padding: const EdgeInsets.all(30),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10))
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
                   ),
                   child: Column(
                     children: [
-                      Text(kIsWeb ? 'ເຂົ້າສູ່ລະບົບຜູ້ດູແລ' : 'ເຂົ້າສູ່ລະບົບ',
-                          style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Google Sans')),
+                      Text(
+                        kIsWeb ? 'ເຂົ້າສູ່ລະບົບຜູ້ດູແລ' : 'ເຂົ້າສູ່ລະບົບ',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Google Sans',
+                        ),
+                      ),
                       const SizedBox(height: 35),
 
                       _buildTextField(
-                          _emailController,
-                          Icons.person_outline,
-                          kIsWeb ? 'Admin Username' : 'ຊື່ຜູ້ໃຊ້ ຫຼື ອີເມວ'),
+                        _emailController,
+                        Icons.person_outline,
+                        kIsWeb ? 'Admin Username' : 'ຊື່ຜູ້ໃຊ້ ຫຼື ອີເມວ',
+                      ),
                       const SizedBox(height: 18),
                       _buildTextField(
-                          _passwordController, Icons.lock_outline, 'ລະຫັດຜ່ານ',
-                          isPassword: true,
-                          suffix: IconButton(
-                            icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                size: 20),
-                            onPressed: () => setState(
-                                    () => _obscurePassword = !_obscurePassword),
-                          )),
+                        _passwordController,
+                        Icons.lock_outline,
+                        'ລະຫັດຜ່ານ',
+                        isPassword: true,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            size: 20,
+                          ),
+                          onPressed:
+                              () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                        ),
+                      ),
 
                       const SizedBox(height: 30),
 
@@ -195,21 +218,29 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF1A56BE),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15)),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
                             elevation: 0,
                           ),
-                          child: _isLoading
-                              ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2))
-                              : const Text('ເຂົ້າສູ່ລະບົບ',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Google Sans')),
+                          child:
+                              _isLoading
+                                  ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text(
+                                    'ເຂົ້າສູ່ລະບົບ',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Google Sans',
+                                    ),
+                                  ),
                         ),
                       ),
 
@@ -218,24 +249,33 @@ class _LoginScreenState extends State<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('ຍັງບໍ່ມີບັນຊີ? ',
-                                style: TextStyle(
-                                    color: Colors.grey,
-                                    fontFamily: 'Google Sans')),
+                            const Text(
+                              'ຍັງບໍ່ມີບັນຊີ? ',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontFamily: 'Google Sans',
+                              ),
+                            ),
                             GestureDetector(
-                              onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const RegisterScreen())),
-                              child: const Text('ລົງທະບຽນ',
-                                  style: TextStyle(
-                                      color: Color(0xFF1A56BE),
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Google Sans')),
+                              onTap:
+                                  () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const RegisterScreen(),
+                                    ),
+                                  ),
+                              child: const Text(
+                                'ລົງທະບຽນ',
+                                style: TextStyle(
+                                  color: Color(0xFF1A56BE),
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Google Sans',
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      ]
+                      ],
                     ],
                   ),
                 ),
@@ -247,8 +287,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController ctrl, IconData icon, String hint,
-      {bool isPassword = false, Widget? suffix}) {
+  Widget _buildTextField(
+    TextEditingController ctrl,
+    IconData icon,
+    String hint, {
+    bool isPassword = false,
+    Widget? suffix,
+  }) {
     return TextField(
       controller: ctrl,
       obscureText: isPassword ? _obscurePassword : false,
@@ -262,14 +307,17 @@ class _LoginScreenState extends State<LoginScreen> {
         fillColor: Colors.grey[50],
         contentPadding: const EdgeInsets.symmetric(vertical: 18),
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(color: Colors.grey[200]!)),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey[200]!),
+        ),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(color: Colors.grey[200]!)),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey[200]!),
+        ),
         focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 1.5)),
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 1.5),
+        ),
       ),
     );
   }

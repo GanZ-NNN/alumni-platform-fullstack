@@ -11,9 +11,9 @@ void main() {
 class MyCustomScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse, 
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+  };
 }
 
 class MyApp extends StatelessWidget {
@@ -24,10 +24,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Alumni Platform',
-      
+
       // ✅ 2. ເອີ້ນໃຊ້ ScrollBehavior ຢູ່ບ່ອນນີ້
       scrollBehavior: MyCustomScrollBehavior(),
-      
+
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,

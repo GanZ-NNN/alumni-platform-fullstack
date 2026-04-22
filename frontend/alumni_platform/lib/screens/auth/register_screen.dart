@@ -33,16 +33,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
 
-  final List<String> _majors = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology'];
-  final List<String> _years = List.generate(20, (index) => (2026 - index).toString());
-  final List<String> _eduLevels = ['Bachelor\'s Degree', 'Master\'s Degree', 'Doctorate', 'Higher Diploma'];
-  final List<String> _industries = ['Technology', 'Finance', 'Education', 'Healthcare', 'Engineering', 'Government', 'Other'];
+  final List<String> _majors = [
+    'Computer Science',
+    'Mathematics',
+    'Physics',
+    'Chemistry',
+    'Biology',
+  ];
+  final List<String> _years = List.generate(
+    20,
+    (index) => (2026 - index).toString(),
+  );
+  final List<String> _eduLevels = [
+    'Bachelor\'s Degree',
+    'Master\'s Degree',
+    'Doctorate',
+    'Higher Diploma',
+  ];
+  final List<String> _industries = [
+    'Technology',
+    'Finance',
+    'Education',
+    'Healthcare',
+    'Engineering',
+    'Government',
+    'Other',
+  ];
 
   bool _isRegistering = false;
 
   void _nextPage() {
     if (_currentStep < 2) {
-      _pageController.nextPage(duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
     } else {
       _handleRegister();
     }
@@ -50,7 +75,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _prevPage() {
     if (_currentStep > 0) {
-      _pageController.previousPage(duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
     } else {
       Navigator.pop(context);
     }
@@ -116,27 +144,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: const EdgeInsets.only(top: 60, bottom: 40, left: 24, right: 24),
       decoration: const BoxDecoration(
         color: Color(0xFF1A56BE),
-        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(32), bottomRight: Radius.circular(32)),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              IconButton(onPressed: _prevPage, icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20)),
+              IconButton(
+                onPressed: _prevPage,
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Create Account', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
-                    Text(_getStepTitle(), style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14, fontFamily: 'Google Sans')),
+                    const Text(
+                      'Create Account',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Google Sans',
+                      ),
+                    ),
+                    Text(
+                      _getStepTitle(),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 14,
+                        fontFamily: 'Google Sans',
+                      ),
+                    ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                child: Text('Step ${_currentStep + 1}/3', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Google Sans')),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Step ${_currentStep + 1}/3',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    fontFamily: 'Google Sans',
+                  ),
+                ),
               ),
             ],
           ),
@@ -165,17 +232,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
     bool isActive = index == _currentStep;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      width: 44, height: 44,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
-        color: isActive || isCompleted ? Colors.white : Colors.white.withOpacity(0.15),
+        color:
+            isActive || isCompleted
+                ? Colors.white
+                : Colors.white.withOpacity(0.15),
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
-        boxShadow: isActive ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)] : null,
+        boxShadow:
+            isActive
+                ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                  ),
+                ]
+                : null,
       ),
       child: Icon(
         isCompleted ? Icons.check_rounded : icon,
         size: 20,
-        color: isActive || isCompleted ? const Color(0xFF1A56BE) : Colors.white.withOpacity(0.5),
+        color:
+            isActive || isCompleted
+                ? const Color(0xFF1A56BE)
+                : Colors.white.withOpacity(0.5),
       ),
     );
   }
@@ -183,7 +265,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildProgressLine(int index) {
     bool isCompleted = index < _currentStep;
     return Container(
-      width: 60, height: 2,
+      width: 60,
+      height: 2,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: isCompleted ? Colors.white : Colors.white.withOpacity(0.2),
@@ -207,58 +290,131 @@ class _RegisterScreenState extends State<RegisterScreen> {
       const SizedBox(height: 24),
       _buildLabel('Gender *'),
       Row(
-        children: ['Male', 'Female', 'Other'].map((g) => Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => _gender = g),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: _gender == g ? const Color(0xFF1A56BE) : Colors.white,
-                border: Border.all(color: _gender == g ? const Color(0xFF1A56BE) : const Color(0xFFE2E8F0)),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Center(child: Text(g, style: TextStyle(color: _gender == g ? Colors.white : const Color(0xFF64748B), fontWeight: FontWeight.bold, fontFamily: 'Google Sans'))),
-            ),
-          ),
-        )).toList(),
+        children:
+            ['Male', 'Female', 'Other']
+                .map(
+                  (g) => Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _gender = g),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color:
+                              _gender == g
+                                  ? const Color(0xFF1A56BE)
+                                  : Colors.white,
+                          border: Border.all(
+                            color:
+                                _gender == g
+                                    ? const Color(0xFF1A56BE)
+                                    : const Color(0xFFE2E8F0),
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: Text(
+                            g,
+                            style: TextStyle(
+                              color:
+                                  _gender == g
+                                      ? Colors.white
+                                      : const Color(0xFF64748B),
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Google Sans',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
       ),
       const SizedBox(height: 24),
       _buildLabel('Date of Birth *'),
-      _buildTextField(_dobCtrl, 'YYYY-MM-DD', icon: Icons.calendar_month_rounded),
+      _buildTextField(
+        _dobCtrl,
+        'YYYY-MM-DD',
+        icon: Icons.calendar_month_rounded,
+      ),
       const SizedBox(height: 24),
       _buildLabel('Phone Number *'),
-      _buildTextField(_phoneCtrl, '+856 20 XXXX XXXX', icon: Icons.phone_android_rounded),
+      _buildTextField(
+        _phoneCtrl,
+        '+856 20 XXXX XXXX',
+        icon: Icons.phone_android_rounded,
+      ),
     ]);
   }
 
   Widget _stepEducationInfo() {
     return _buildCard([
       _buildLabel('Student ID *'),
-      _buildTextField(_studentIdCtrl, 'Enter your ID number', icon: Icons.badge_outlined),
+      _buildTextField(
+        _studentIdCtrl,
+        'Enter your ID number',
+        icon: Icons.badge_outlined,
+      ),
       const SizedBox(height: 24),
       _buildLabel('Department (Major) *'),
       DropdownButtonFormField<String>(
-        value: _selectedMajor,
+        initialValue: _selectedMajor,
         decoration: _inputDecoration('Select major', Icons.category_rounded),
-        items: _majors.map((m) => DropdownMenuItem(value: m, child: Text(m, style: const TextStyle(fontFamily: 'Google Sans')))).toList(),
+        items:
+            _majors
+                .map(
+                  (m) => DropdownMenuItem(
+                    value: m,
+                    child: Text(
+                      m,
+                      style: const TextStyle(fontFamily: 'Google Sans'),
+                    ),
+                  ),
+                )
+                .toList(),
         onChanged: (val) => setState(() => _selectedMajor = val),
       ),
       const SizedBox(height: 24),
       _buildLabel('Graduation Year *'),
       DropdownButtonFormField<String>(
-        value: _selectedYear,
-        decoration: _inputDecoration('Select year', Icons.event_available_rounded),
-        items: _years.map((y) => DropdownMenuItem(value: y, child: Text(y, style: const TextStyle(fontFamily: 'Google Sans')))).toList(),
+        initialValue: _selectedYear,
+        decoration: _inputDecoration(
+          'Select year',
+          Icons.event_available_rounded,
+        ),
+        items:
+            _years
+                .map(
+                  (y) => DropdownMenuItem(
+                    value: y,
+                    child: Text(
+                      y,
+                      style: const TextStyle(fontFamily: 'Google Sans'),
+                    ),
+                  ),
+                )
+                .toList(),
         onChanged: (val) => setState(() => _selectedYear = val),
       ),
       const SizedBox(height: 24),
       _buildLabel('Education Level *'),
       DropdownButtonFormField<String>(
-        value: _selectedEduLevel,
+        initialValue: _selectedEduLevel,
         decoration: _inputDecoration('Select level', Icons.school_rounded),
-        items: _eduLevels.map((l) => DropdownMenuItem(value: l, child: Text(l, style: const TextStyle(fontFamily: 'Google Sans')))).toList(),
+        items:
+            _eduLevels
+                .map(
+                  (l) => DropdownMenuItem(
+                    value: l,
+                    child: Text(
+                      l,
+                      style: const TextStyle(fontFamily: 'Google Sans'),
+                    ),
+                  ),
+                )
+                .toList(),
         onChanged: (val) => setState(() => _selectedEduLevel = val),
       ),
     ]);
@@ -267,16 +423,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _stepWorkInfo() {
     return _buildCard([
       _buildLabel('Current Job Title'),
-      _buildTextField(_jobTitleCtrl, 'e.g. Project Manager', icon: Icons.badge_rounded),
+      _buildTextField(
+        _jobTitleCtrl,
+        'e.g. Project Manager',
+        icon: Icons.badge_rounded,
+      ),
       const SizedBox(height: 24),
       _buildLabel('Company Name'),
-      _buildTextField(_companyCtrl, 'e.g. Tech Solutions Inc.', icon: Icons.business_rounded),
+      _buildTextField(
+        _companyCtrl,
+        'e.g. Tech Solutions Inc.',
+        icon: Icons.business_rounded,
+      ),
       const SizedBox(height: 24),
       _buildLabel('Industry'),
       DropdownButtonFormField<String>(
-        value: _selectedIndustry,
+        initialValue: _selectedIndustry,
         decoration: _inputDecoration('Select industry', Icons.domain_rounded),
-        items: _industries.map((i) => DropdownMenuItem(value: i, child: Text(i, style: const TextStyle(fontFamily: 'Google Sans')))).toList(),
+        items:
+            _industries
+                .map(
+                  (i) => DropdownMenuItem(
+                    value: i,
+                    child: Text(
+                      i,
+                      style: const TextStyle(fontFamily: 'Google Sans'),
+                    ),
+                  ),
+                )
+                .toList(),
         onChanged: (val) => setState(() => _selectedIndustry = val),
       ),
       const SizedBox(height: 32),
@@ -284,7 +459,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _buildTextField(_emailCtrl, 'your@email.com', icon: Icons.email_rounded),
       const SizedBox(height: 24),
       _buildLabel('Password *'),
-      _buildTextField(_passCtrl, 'Minimum 8 characters', icon: Icons.lock_rounded, isPassword: true),
+      _buildTextField(
+        _passCtrl,
+        'Minimum 8 characters',
+        icon: Icons.lock_rounded,
+        isPassword: true,
+      ),
     ]);
   }
 
@@ -296,9 +476,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 10))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: children,
+        ),
       ),
     );
   }
@@ -306,7 +495,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildBottomButtons() {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Color(0xFFF1F5F9)))),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -314,9 +506,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               onPressed: _prevPage,
               style: TextButton.styleFrom(
                 minimumSize: const Size(0, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              child: Text(_currentStep == 0 ? 'Cancel' : 'Back', style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+              child: Text(
+                _currentStep == 0 ? 'Cancel' : 'Back',
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Google Sans',
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -329,11 +530,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 minimumSize: const Size(0, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              child: _isRegistering 
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : Text(_currentStep == 2 ? 'Submit Registration' : 'Continue', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Google Sans')),
+              child:
+                  _isRegistering
+                      ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                      : Text(
+                        _currentStep == 2 ? 'Submit Registration' : 'Continue',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          fontFamily: 'Google Sans',
+                        ),
+                      ),
             ),
           ),
         ],
@@ -341,22 +559,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildLabel(String text) => Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontSize: 14, fontFamily: 'Google Sans')));
+  Widget _buildLabel(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF1E293B),
+        fontSize: 14,
+        fontFamily: 'Google Sans',
+      ),
+    ),
+  );
 
   InputDecoration _inputDecoration(String hint, IconData? icon) {
     return InputDecoration(
       hintText: hint,
-      prefixIcon: icon != null ? Icon(icon, size: 20, color: const Color(0xFF1A56BE)) : null,
-      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14, fontFamily: 'Google Sans'),
+      prefixIcon:
+          icon != null
+              ? Icon(icon, size: 20, color: const Color(0xFF1A56BE))
+              : null,
+      hintStyle: const TextStyle(
+        color: Color(0xFF94A3B8),
+        fontSize: 14,
+        fontFamily: 'Google Sans',
+      ),
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 1.5)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 1.5),
+      ),
     );
   }
 
-  Widget _buildTextField(TextEditingController ctrl, String hint, {IconData? icon, bool isPassword = false}) {
+  Widget _buildTextField(
+    TextEditingController ctrl,
+    String hint, {
+    IconData? icon,
+    bool isPassword = false,
+  }) {
     return TextField(
       controller: ctrl,
       obscureText: isPassword,

@@ -37,7 +37,11 @@ class ApiResponse {
   }) {
     return json(statusCode, {
       'success': false,
-      'error': {'code': code, 'message': message, 'details': ?details},
+      'error': {
+        'code': code,
+        'message': message,
+        if (details != null) ...{'details': details},
+      },
     }, headers: headers);
   }
 }

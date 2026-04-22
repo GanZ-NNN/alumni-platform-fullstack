@@ -8,15 +8,10 @@ class AdminService {
 
   final ApiClient _apiClient;
 
-  Map<String, String> get _adminHeaders => {
-    'Content-Type': 'application/json',
-    'x-user-role': 'admin',
-  };
-
   Future<List<UserModel>> getAllUsers() async {
     try {
       final response = await _apiClient
-          .get('/admin/users', headers: _adminHeaders, withAuth: true)
+          .get('/admin/users', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -33,11 +28,7 @@ class AdminService {
   Future<bool> approveUser(String id) async {
     try {
       final response = await _apiClient
-          .put(
-            '/admin/users/$id/approve',
-            headers: _adminHeaders,
-            withAuth: true,
-          )
+          .put('/admin/users/$id/approve', withAuth: true)
           .timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
@@ -48,7 +39,7 @@ class AdminService {
   Future<bool> deleteUser(String id) async {
     try {
       final response = await _apiClient
-          .delete('/admin/users/$id', headers: _adminHeaders, withAuth: true)
+          .delete('/admin/users/$id', withAuth: true)
           .timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
@@ -59,7 +50,7 @@ class AdminService {
   Future<bool> deleteJob(int id) async {
     try {
       final response = await _apiClient
-          .delete('/admin/jobs/$id', headers: _adminHeaders, withAuth: true)
+          .delete('/admin/jobs/$id', withAuth: true)
           .timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
@@ -70,7 +61,7 @@ class AdminService {
   Future<Map<String, dynamic>?> getDashboardStats() async {
     try {
       final response = await _apiClient
-          .get('/admin/stats', headers: _adminHeaders, withAuth: true)
+          .get('/admin/stats', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) return jsonDecode(response.body);
       debugPrint('❌ Stats Error: ${response.statusCode}');
@@ -83,7 +74,7 @@ class AdminService {
   Future<List<dynamic>> getActivityLogs() async {
     try {
       final response = await _apiClient
-          .get('/admin/logs', headers: _adminHeaders, withAuth: true)
+          .get('/admin/logs', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) return jsonDecode(response.body);
       return [];
@@ -95,7 +86,7 @@ class AdminService {
   Future<List<dynamic>> getMajorReports() async {
     try {
       final res = await _apiClient
-          .get('/admin/reports/majors', headers: _adminHeaders, withAuth: true)
+          .get('/admin/reports/majors', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         return jsonDecode(res.body);
@@ -112,7 +103,7 @@ class AdminService {
   Future<List<dynamic>> getYearReports() async {
     try {
       final res = await _apiClient
-          .get('/admin/reports/years', headers: _adminHeaders, withAuth: true)
+          .get('/admin/reports/years', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         return jsonDecode(res.body);
@@ -129,11 +120,7 @@ class AdminService {
   Future<List<dynamic>> getEmploymentReports() async {
     try {
       final res = await _apiClient
-          .get(
-            '/admin/reports/employment',
-            headers: _adminHeaders,
-            withAuth: true,
-          )
+          .get('/admin/reports/employment', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) return jsonDecode(res.body);
       return [];
@@ -145,11 +132,7 @@ class AdminService {
   Future<List<dynamic>> getWorkplaceReports() async {
     try {
       final res = await _apiClient
-          .get(
-            '/admin/reports/workplaces',
-            headers: _adminHeaders,
-            withAuth: true,
-          )
+          .get('/admin/reports/workplaces', withAuth: true)
           .timeout(const Duration(seconds: 10));
       return res.statusCode == 200 ? jsonDecode(res.body) : [];
     } catch (e) {
@@ -160,11 +143,7 @@ class AdminService {
   Future<List<dynamic>> getPositionReports() async {
     try {
       final res = await _apiClient
-          .get(
-            '/admin/reports/positions',
-            headers: _adminHeaders,
-            withAuth: true,
-          )
+          .get('/admin/reports/positions', withAuth: true)
           .timeout(const Duration(seconds: 10));
       return res.statusCode == 200 ? jsonDecode(res.body) : [];
     } catch (e) {

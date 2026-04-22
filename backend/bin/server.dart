@@ -1,5 +1,5 @@
-import '../lib/main.dart' as lib_main;
+import 'package:backend/main.dart' as app;
 
-void main(List<String> args) async {
-  await lib_main.main();
+void main() async {
+  await app.main();
 }

@@ -26,20 +26,51 @@ class SettingsScreen extends StatelessWidget {
 
                   // 3. Settings Categories
                   _buildSection('Account', [
-                    _buildSettingItem(Icons.person_outline, 'Edit Profile', onTap: () {}),
-                    _buildSettingItem(Icons.lock_outline, 'Change Password', onTap: () {}),
-                    _buildSettingItem(Icons.notifications_none, 'Notifications', onTap: () {}),
+                    _buildSettingItem(
+                      Icons.person_outline,
+                      'Edit Profile',
+                      onTap: () {},
+                    ),
+                    _buildSettingItem(
+                      Icons.lock_outline,
+                      'Change Password',
+                      onTap: () {},
+                    ),
+                    _buildSettingItem(
+                      Icons.notifications_none,
+                      'Notifications',
+                      onTap: () {},
+                    ),
                   ]),
 
                   const SizedBox(height: 20),
                   _buildSection('Preferences', [
-                    _buildSettingItem(Icons.language, 'Language', trailing: const Text('English', style: TextStyle(color: Colors.grey, fontFamily: 'Google Sans')), onTap: () {}),
+                    _buildSettingItem(
+                      Icons.language,
+                      'Language',
+                      trailing: const Text(
+                        'English',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontFamily: 'Google Sans',
+                        ),
+                      ),
+                      onTap: () {},
+                    ),
                   ]),
 
                   const SizedBox(height: 20),
                   _buildSection('Support', [
-                    _buildSettingItem(Icons.help_outline, 'Help Center', onTap: () {}),
-                    _buildSettingItem(Icons.info_outline, 'About', onTap: () {}),
+                    _buildSettingItem(
+                      Icons.help_outline,
+                      'Help Center',
+                      onTap: () {},
+                    ),
+                    _buildSettingItem(
+                      Icons.info_outline,
+                      'About',
+                      onTap: () {},
+                    ),
                   ]),
 
                   const SizedBox(height: 40),
@@ -65,7 +96,10 @@ class SettingsScreen extends StatelessWidget {
       ),
       decoration: const BoxDecoration(
         color: Color(0xFF1A56BE),
-        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
       ),
       child: Row(
         children: [
@@ -75,7 +109,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Text(
             'Settings',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Google Sans'),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Google Sans',
+            ),
           ),
         ],
       ),
@@ -88,24 +127,47 @@ class SettingsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundImage: (user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty)
-                ? NetworkImage(user.profileImageUrl!)
-                : null,
-            child: user.profileImageUrl == null ? const Icon(Icons.person) : null,
+            backgroundImage:
+                (user.profileImageUrl != null &&
+                        user.profileImageUrl!.isNotEmpty)
+                    ? NetworkImage(user.profileImageUrl!)
+                    : null,
+            child:
+                user.profileImageUrl == null ? const Icon(Icons.person) : null,
           ),
           const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${user.firstName} ${user.lastName ?? ''}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
-                Text(user.email, style: const TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'Google Sans')),
+                Text(
+                  '${user.firstName} ${user.lastName ?? ''}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Google Sans',
+                  ),
+                ),
+                Text(
+                  user.email,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 13,
+                    fontFamily: 'Google Sans',
+                  ),
+                ),
               ],
             ),
           ),
@@ -120,13 +182,27 @@ class SettingsScreen extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 5, bottom: 10),
-          child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blueGrey, fontFamily: 'Google Sans')),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueGrey,
+              fontFamily: 'Google Sans',
+            ),
+          ),
         ),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(children: items),
         ),
@@ -134,11 +210,25 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingItem(IconData icon, String title, {Widget? trailing, VoidCallback? onTap}) {
+  Widget _buildSettingItem(
+    IconData icon,
+    String title, {
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF1A56BE), size: 22),
-      title: Text(title, style: const TextStyle(fontSize: 15, fontFamily: 'Google Sans', fontWeight: FontWeight.w500)),
-      trailing: trailing ?? const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 15,
+          fontFamily: 'Google Sans',
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing:
+          trailing ??
+          const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
@@ -150,13 +240,27 @@ class SettingsScreen extends StatelessWidget {
       height: 55,
       child: ElevatedButton.icon(
         onPressed: () {
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
         },
         icon: const Icon(Icons.logout, color: Colors.white),
-        label: const Text('Log Out', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+        label: const Text(
+          'Log Out',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Google Sans',
+          ),
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.redAccent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
           elevation: 0,
         ),
       ),

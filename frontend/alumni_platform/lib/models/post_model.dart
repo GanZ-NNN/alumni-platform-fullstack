@@ -12,7 +12,7 @@ class PostModel {
     required this.content,
     required this.type,
     required this.createdAt,
-     this.imageUrl
+    this.imageUrl,
   });
 
   factory PostModel.fromMap(Map<String, dynamic> json) {

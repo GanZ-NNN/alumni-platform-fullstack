@@ -45,3 +45,8 @@ GitHub Actions workflow at `.github/workflows/ci.yml` runs:
 
 - Backend: format, analyze, test
 - Frontend: format, analyze, test
+
+## Logging note
+
+Request logging is applied by backend middleware in `backend/lib/main.dart`.
+After middleware changes, restart the running backend process to apply the updated log format.

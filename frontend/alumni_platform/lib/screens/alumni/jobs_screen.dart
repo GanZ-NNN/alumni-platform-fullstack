@@ -41,14 +41,17 @@ class _JobsScreenState extends State<JobsScreen> {
           // Header Area with Logo, Notification, and Logout
           Container(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 10, 
-              left: 20, 
-              right: 20, 
-              bottom: 25
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 20,
+              right: 20,
+              bottom: 25,
             ),
             decoration: const BoxDecoration(
               color: Color(0xFF1A56BE),
-              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,28 +60,63 @@ class _JobsScreenState extends State<JobsScreen> {
                   children: [
                     const CircleAvatar(
                       backgroundColor: Colors.white,
-                      child: Text('FNS', style: TextStyle(color: Color(0xFF1A56BE), fontWeight: FontWeight.bold)),
+                      child: Text(
+                        'FNS',
+                        style: TextStyle(
+                          color: Color(0xFF1A56BE),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ວຽກເຮັດງານທຳ', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                          Text('ໂອກາດໃນສາຍງານ', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text(
+                            'ວຽກເຮັດງານທຳ',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'ໂອກາດໃນສາຍງານ',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.notifications_none, color: Colors.white, size: 28),
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationListScreen())),
+                      icon: const Icon(
+                        Icons.notifications_none,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                      onPressed:
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationListScreen(),
+                            ),
+                          ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+                      icon: const Icon(
+                        Icons.logout,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                       onPressed: () {
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
                           (route) => false,
                         );
                       },
@@ -86,7 +124,10 @@ class _JobsScreenState extends State<JobsScreen> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Text('ໂອກາດຈາກນັກສຶກສາເກົ່າ ແລະ ອາຈານ', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                const Text(
+                  'ໂອກາດຈາກນັກສຶກສາເກົ່າ ແລະ ອາຈານ',
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
                 const SizedBox(height: 15),
                 TextField(
                   decoration: InputDecoration(
@@ -94,7 +135,10 @@ class _JobsScreenState extends State<JobsScreen> {
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
                     fillColor: Colors.white,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
               ],
@@ -103,67 +147,109 @@ class _JobsScreenState extends State<JobsScreen> {
 
           // Job List
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-              padding: const EdgeInsets.all(15),
-              itemCount: _jobs.length,
-              itemBuilder: (context, index) {
-                final job = _jobs[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 50, height: 50,
-                              decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(12)),
-                              child: const Icon(Icons.business, color: Colors.blue),
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                      padding: const EdgeInsets.all(15),
+                      itemCount: _jobs.length,
+                      itemBuilder: (context, index) {
+                        final job = _jobs[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(15),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue[50],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(
+                                        Icons.business,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 15),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            job.jobTitle,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Text(
+                                            job.companyName,
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.bookmark_border,
+                                      color: Colors.grey,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 15),
+                                Row(
+                                  children: [
+                                    _buildTag('Full-time', Colors.blue),
+                                    const SizedBox(width: 8),
+                                    _buildTag(job.location, Colors.grey),
+                                  ],
+                                ),
+                                const SizedBox(height: 15),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'ສິ້ນສຸດ: ${job.createdAt.substring(0, 10)}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFF1A56BE,
+                                        ),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text('ສະໝັກ'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 15),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(job.jobTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  Text(job.companyName, style: const TextStyle(color: Colors.grey)),
-                                ],
-                              ),
-                            ),
-                            const Icon(Icons.bookmark_border, color: Colors.grey),
-                          ],
-                        ),
-                        const SizedBox(height: 15),
-                        Row(
-                          children: [
-                            _buildTag('Full-time', Colors.blue),
-                            const SizedBox(width: 8),
-                            _buildTag(job.location, Colors.grey),
-                          ],
-                        ),
-                        const SizedBox(height: 15),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('ສິ້ນສຸດ: ${job.createdAt.substring(0, 10)}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                            ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1A56BE), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                              child: const Text('ສະໝັກ'),
-                            )
-                          ],
-                        )
-                      ],
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -178,8 +264,18 @@ class _JobsScreenState extends State<JobsScreen> {
   Widget _buildTag(String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-      child: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

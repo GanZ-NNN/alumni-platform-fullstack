@@ -50,7 +50,11 @@ class _AlumniHomeScreenState extends State<AlumniHomeScreen> {
             topRight: Radius.circular(30),
           ),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -5)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
           ],
         ),
         child: ClipRRect(
@@ -69,13 +73,30 @@ class _AlumniHomeScreenState extends State<AlumniHomeScreen> {
                 unselectedItemColor: Colors.grey[400],
                 showSelectedLabels: true,
                 showUnselectedLabels: true,
-                selectedLabelStyle: const TextStyle(fontFamily: 'Google Sans', fontSize: 12, fontWeight: FontWeight.bold),
-                unselectedLabelStyle: const TextStyle(fontFamily: 'Google Sans', fontSize: 12),
+                selectedLabelStyle: const TextStyle(
+                  fontFamily: 'Google Sans',
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontFamily: 'Google Sans',
+                  fontSize: 12,
+                ),
                 items: [
                   _buildNavItem(Icons.home_outlined, Icons.home, 'ໜ້າຫຼັກ', 0),
-                  _buildNavItem(Icons.people_outline, Icons.people, 'ບັນຊີລາຍຊື່', 1),
+                  _buildNavItem(
+                    Icons.people_outline,
+                    Icons.people,
+                    'ບັນຊີລາຍຊື່',
+                    1,
+                  ),
                   _buildNavItem(Icons.work_outline, Icons.work, 'ວຽກງານ', 2),
-                  _buildNavItem(Icons.person_outline, Icons.person, 'ໂປຣໄຟລ໌', 3),
+                  _buildNavItem(
+                    Icons.person_outline,
+                    Icons.person,
+                    'ໂປຣໄຟລ໌',
+                    3,
+                  ),
                 ],
               ),
 
@@ -83,7 +104,10 @@ class _AlumniHomeScreenState extends State<AlumniHomeScreen> {
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                left: (MediaQuery.of(context).size.width / 4) * _currentIndex + (MediaQuery.of(context).size.width / 8) - 25,
+                left:
+                    (MediaQuery.of(context).size.width / 4) * _currentIndex +
+                    (MediaQuery.of(context).size.width / 8) -
+                    25,
                 top: 0,
                 child: Container(
                   width: 50,
@@ -101,7 +125,12 @@ class _AlumniHomeScreenState extends State<AlumniHomeScreen> {
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(IconData icon, IconData activeIcon, String label, int index) {
+  BottomNavigationBarItem _buildNavItem(
+    IconData icon,
+    IconData activeIcon,
+    String label,
+    int index,
+  ) {
     return BottomNavigationBarItem(
       icon: Padding(
         padding: const EdgeInsets.only(top: 8.0),
