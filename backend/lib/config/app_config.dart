@@ -35,6 +35,9 @@ class AppConfig {
   static String get databaseUrl =>
       'postgresql://$dbUser:$dbPassword@$dbHost:$dbPort/$dbName';
 
+  static String get emailUsername => _env['EMAIL_USERNAME'] ?? '';
+  static String get emailPassword => _env['EMAIL_PASSWORD'] ?? '';
+
   static void validate() {
     final rawJwtSecret = (_env['JWT_SECRET'] ?? '').trim();
     final isDefaultJwtSecret =

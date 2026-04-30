@@ -41,6 +41,10 @@ class DatabaseConfig {
         password TEXT NOT NULL,
         first_name TEXT DEFAULT '',
         last_name TEXT DEFAULT '',
+        gender TEXT,
+        dob DATE,
+        student_id TEXT,
+        phone TEXT,
         role TEXT NOT NULL DEFAULT 'alumni',
         status TEXT NOT NULL DEFAULT 'pending',
         major TEXT,
@@ -50,6 +54,33 @@ class DatabaseConfig {
         created_at TIMESTAMP DEFAULT NOW()
       )
     ''');
+
+    // Ensure newer columns exist (for existing databases)
+    final userCols = ['gender', 'dob', 'student_id', 'phone', 'major', 'graduation_year', 'phone_number', 'profile_image_url'];
+    for (final col in userCols) {
+      try {
+        await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS $col TEXT');
+        if (col == 'graduation_year') {
+          await _connection.execute('ALTER TABLE users ALTER COLUMN graduation_year TYPE INT USING graduation_year::integer');
+        }
+        if (col == 'dob') {
+          await _connection.execute('ALTER TABLE users ALTER COLUMN dob TYPE DATE USING dob::date');
+        }
+      } catch (_) {
+        // Column might already exist or have incompatible type changes handled elsewhere
+      }
+    }
+    
+    // Add columns that might be missing in older versions
+    try {
+      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS education_level TEXT');
+      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS job_title TEXT');
+      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS company_name TEXT');
+      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS industry TEXT');
+      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS workplace TEXT');
+      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS job_position TEXT');
+      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS work_status TEXT DEFAULT \'Unemployed\'');
+    } catch (_) {}
 
     await _connection.execute('''
       CREATE TABLE IF NOT EXISTS posts (
@@ -86,9 +117,31 @@ class DatabaseConfig {
         created_at TIMESTAMP DEFAULT NOW()
       )
     ''');
+
+    await _connection.execute('''
+      CREATE TABLE IF NOT EXISTS graduated_students (
+        student_id TEXT PRIMARY KEY,
+        full_name TEXT NOT NULL,
+        graduation_year INT NOT NULL
+      )
+    ''');
+
+    await _connection.execute('''
+      CREATE TABLE IF NOT EXISTS password_resets (
+        email TEXT PRIMARY KEY,
+        code TEXT NOT NULL,
+        expires_at TIMESTAMP NOT NULL
+      )
+    ''');
   }
 
   static Future<void> _ensureDefaultAdmin() async {
+    // Seed sample graduated students for testing
+    final graduatedCount = await _connection.execute('SELECT COUNT(*) FROM graduated_students');
+    if ((graduatedCount.first[0] as int) == 0) {
+      await _connection.execute("INSERT INTO graduated_students (student_id, full_name, graduation_year) VALUES ('STD001', 'John Doe', 2023), ('STD002', 'Jane Smith', 2022)");
+    }
+
     final existing = await _connection.execute(
       Sql.named('SELECT id FROM users WHERE email = @email LIMIT 1'),
       parameters: {'email': 'admin@example.com'},
