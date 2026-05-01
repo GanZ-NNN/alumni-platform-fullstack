@@ -25,7 +25,8 @@ class ApiResponse {
   }) {
     return json(statusCode, {
       'success': true,
-      'message': ?message,
+      // ignore: use_null_aware_elements
+      if (message != null) 'message': message,
       'data': data ?? <String, dynamic>{},
     }, headers: headers);
   }
@@ -45,7 +46,8 @@ class ApiResponse {
       'error': {
         'code': code,
         'message': message,
-        'details':? details,
+        // ignore: use_null_aware_elements
+        if (details != null) 'details': details,
       },
     }, headers: headers);
   }
