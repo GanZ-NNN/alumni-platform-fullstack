@@ -90,7 +90,12 @@ class _AlumniHomeScreenState extends State<AlumniHomeScreen> {
                     'ບັນຊີລາຍຊື່',
                     1,
                   ),
-                  _buildNavItem(Icons.work_outline, Icons.work, 'ວຽກງານ', 2),
+                  _buildNavItem(
+                    Icons.work_outline,
+                    Icons.work,
+                    'Career Hub',
+                    2,
+                  ),
                   _buildNavItem(
                     Icons.person_outline,
                     Icons.person,

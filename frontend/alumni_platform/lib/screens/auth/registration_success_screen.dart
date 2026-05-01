@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 
 class RegistrationSuccessScreen extends StatelessWidget {
-  const RegistrationSuccessScreen({super.key});
+  final bool isPending;
+  const RegistrationSuccessScreen({super.key, this.isPending = true});
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +45,10 @@ class RegistrationSuccessScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Text(
-                      'Registration Successful!',
+                    Text(
+                      isPending ? 'Registration Successful!' : 'Welcome to FNS!',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1E293B),
@@ -63,10 +64,12 @@ class RegistrationSuccessScreen extends StatelessWidget {
                         color: const Color(0xFFE8F1FF),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Text(
-                        'Your account is currently being reviewed by the administrator to ensure platform security.',
+                      child: Text(
+                        isPending
+                            ? 'Your account is currently being reviewed by the administrator to ensure platform security.'
+                            : 'Your account has been created successfully. You can now log in and explore the platform.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Color(0xFF1A56BE),
                           fontWeight: FontWeight.w500,
                           height: 1.5,
@@ -77,15 +80,21 @@ class RegistrationSuccessScreen extends StatelessWidget {
                     const SizedBox(height: 32),
 
                     // --- Info List ---
-                    _buildInfoItem(
-                      'Verification typically takes 1-2 business days',
-                    ),
-                    _buildInfoItem(
-                      'You will receive an email notification when approved',
-                    ),
-                    _buildInfoItem(
-                      'Please check your spam folder if you don\'t see our email',
-                    ),
+                    if (isPending) ...[
+                      _buildInfoItem(
+                        'Verification typically takes 1-2 business days',
+                      ),
+                      _buildInfoItem(
+                        'You will receive an email notification when approved',
+                      ),
+                      _buildInfoItem(
+                        'Please check your spam folder if you don\'t see our email',
+                      ),
+                    ] else ...[
+                      _buildInfoItem('Connect with alumni and fellow students'),
+                      _buildInfoItem('Access the Career Hub for opportunities'),
+                      _buildInfoItem('Stay updated with FNS news and events'),
+                    ],
 
                     const SizedBox(height: 40),
 
@@ -112,7 +121,7 @@ class RegistrationSuccessScreen extends StatelessWidget {
                           ),
                         ),
                         child: const Text(
-                          'OK',
+                          'Continue to Login',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

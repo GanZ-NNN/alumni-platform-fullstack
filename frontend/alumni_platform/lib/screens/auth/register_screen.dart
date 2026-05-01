@@ -10,106 +10,77 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final PageController _pageController = PageController();
-  int _currentStep = 0; // 0, 1, 2 (3 Steps)
+  final _formKey = GlobalKey<FormState>();
 
-  // Step 1: Personal
   final _fNameCtrl = TextEditingController();
   final _lNameCtrl = TextEditingController();
-  String _gender = 'Male';
-  final _dobCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-
-  // Step 2: Education
-  final _studentIdCtrl = TextEditingController();
-  String? _selectedMajor;
-  String? _selectedYear;
-  String? _selectedEduLevel;
-
-  // Step 3: Work & Account
-  final _jobTitleCtrl = TextEditingController();
-  final _companyCtrl = TextEditingController();
-  String? _selectedIndustry;
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _dobCtrl = TextEditingController();
+  final _studentIdCtrl = TextEditingController();
 
-  final List<String> _majors = [
-    'Computer Science',
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-  ];
-  final List<String> _years = List.generate(
-    20,
-    (index) => (2026 - index).toString(),
-  );
-  final List<String> _eduLevels = [
-    'Bachelor\'s Degree',
-    'Master\'s Degree',
-    'Doctorate',
-    'Higher Diploma',
-  ];
-  final List<String> _industries = [
-    'Technology',
-    'Finance',
-    'Education',
-    'Healthcare',
-    'Engineering',
-    'Government',
-    'Other',
-  ];
+  String _gender = 'Male';
+  String _role = 'guest'; // 'guest' for Student, 'alumni' for Graduate
 
   bool _isRegistering = false;
 
-  void _nextPage() {
-    if (_currentStep < 2) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      _handleRegister();
-    }
-  }
-
-  void _prevPage() {
-    if (_currentStep > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      Navigator.pop(context);
-    }
+  @override
+  void dispose() {
+    _fNameCtrl.dispose();
+    _lNameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _dobCtrl.dispose();
+    _studentIdCtrl.dispose();
+    super.dispose();
   }
 
   void _handleRegister() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isRegistering = true);
-    final success = await AuthService().register(
+    final response = await AuthService().register(
       email: _emailCtrl.text.trim(),
       password: _passCtrl.text.trim(),
       firstName: _fNameCtrl.text.trim(),
       lastName: _lNameCtrl.text.trim(),
-      major: _selectedMajor ?? '',
-      graduationYear: _selectedYear ?? '',
-      phoneNumber: _phoneCtrl.text.trim(),
       gender: _gender,
       dob: _dobCtrl.text.trim(),
       studentId: _studentIdCtrl.text.trim(),
-      educationLevel: _selectedEduLevel ?? '',
-      industry: _selectedIndustry ?? '',
-      jobTitle: _jobTitleCtrl.text.trim(),
-      companyName: _companyCtrl.text.trim(),
+      role: _role,
     );
 
     setState(() => _isRegistering = false);
 
-    if (success && mounted) {
+    if (response != null && mounted) {
+      final data = response['data'] ?? response;
+      final status = data['status']?.toString() ?? 'active';
+      final isPending = status == 'pending';
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const RegistrationSuccessScreen()),
+        MaterialPageRoute(
+          builder: (_) => RegistrationSuccessScreen(isPending: isPending),
+        ),
       );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration failed. Please try again.')),
+      );
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _dobCtrl.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
     }
   }
 
@@ -117,500 +88,209 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              onPageChanged: (index) => setState(() => _currentStep = index),
-              children: [
-                _stepPersonalInfo(),
-                _stepEducationInfo(),
-                _stepWorkInfo(),
-              ],
-            ),
-          ),
-          _buildBottomButtons(),
-        ],
+      appBar: AppBar(
+        title: const Text('Create Account'),
+        backgroundColor: const Color(0xFF1A56BE),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 60, bottom: 40, left: 24, right: 24),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A56BE),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                onPressed: _prevPage,
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 20,
+              const Text(
+                'Join the Alumni Platform',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Create Account',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Google Sans',
-                      ),
-                    ),
-                    Text(
-                      _getStepTitle(),
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 14,
-                        fontFamily: 'Google Sans',
-                      ),
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 8),
+              const Text(
+                'Please fill in your details to get started.',
+                style: TextStyle(color: Color(0xFF64748B)),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'Step ${_currentStep + 1}/3',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    fontFamily: 'Google Sans',
+              const SizedBox(height: 32),
+
+              _buildLabel('I am a...'),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildRoleCard('Current Student', 'guest', Icons.school),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildRoleCard('Graduate', 'alumni', Icons.workspace_premium),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('First Name *'),
+                        _buildTextField(_fNameCtrl, 'First Name'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('Last Name *'),
+                        _buildTextField(_lNameCtrl, 'Last Name'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              _buildLabel('Email Address *'),
+              _buildTextField(_emailCtrl, 'your@email.com', icon: Icons.email_outlined),
+              const SizedBox(height: 20),
+
+              _buildLabel('Password *'),
+              _buildTextField(_passCtrl, '••••••••', icon: Icons.lock_outline, isPassword: true),
+              const SizedBox(height: 20),
+
+              _buildLabel('Gender *'),
+              DropdownButtonFormField<String>(
+                value: _gender,
+                decoration: _inputDecoration('Select Gender', Icons.person_outline),
+                items: ['Male', 'Female', 'Other']
+                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                    .toList(),
+                onChanged: (val) => setState(() => _gender = val!),
+                validator: (val) => val == null || val.isEmpty ? 'Required field' : null,
+              ),
+              const SizedBox(height: 20),
+
+              _buildLabel('Date of Birth (YYYY-MM-DD) *'),
+              TextFormField(
+                controller: _dobCtrl,
+                readOnly: true,
+                onTap: () => _selectDate(context),
+                validator: (val) => val == null || val.isEmpty ? 'Required field' : null,
+                decoration: _inputDecoration('Select Date', Icons.calendar_today_outlined),
+              ),
+              const SizedBox(height: 20),
+
+              _buildLabel('Student ID *'),
+              _buildTextField(_studentIdCtrl, 'Enter your ID', icon: Icons.badge_outlined),
+
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isRegistering ? null : _handleRegister,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A56BE),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isRegistering
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Register',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
+              const SizedBox(height: 24),
             ],
           ),
-          const SizedBox(height: 40),
-          _buildProgressBar(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildProgressIcon(0, Icons.person_rounded),
-        _buildProgressLine(0),
-        _buildProgressIcon(1, Icons.school_rounded),
-        _buildProgressLine(1),
-        _buildProgressIcon(2, Icons.work_rounded),
-      ],
-    );
-  }
-
-  Widget _buildProgressIcon(int index, IconData icon) {
-    bool isCompleted = index < _currentStep;
-    bool isActive = index == _currentStep;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color:
-            isActive || isCompleted
-                ? Colors.white
-                : Colors.white.withOpacity(0.15),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
-        boxShadow:
-            isActive
-                ? [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                  ),
-                ]
-                : null,
-      ),
-      child: Icon(
-        isCompleted ? Icons.check_rounded : icon,
-        size: 20,
-        color:
-            isActive || isCompleted
-                ? const Color(0xFF1A56BE)
-                : Colors.white.withOpacity(0.5),
-      ),
-    );
-  }
-
-  Widget _buildProgressLine(int index) {
-    bool isCompleted = index < _currentStep;
-    return Container(
-      width: 60,
-      height: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: isCompleted ? Colors.white : Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(10),
-      ),
-    );
-  }
-
-  String _getStepTitle() {
-    if (_currentStep == 0) return 'Personal Information';
-    if (_currentStep == 1) return 'Education Background';
-    return 'Career & Account Security';
-  }
-
-  Widget _stepPersonalInfo() {
-    return _buildCard([
-      _buildLabel('Full Name & Surname *'),
-      _buildTextField(_fNameCtrl, 'e.g. John'),
-      const SizedBox(height: 12),
-      _buildTextField(_lNameCtrl, 'e.g. Doe'),
-      const SizedBox(height: 24),
-      _buildLabel('Gender *'),
-      Row(
-        children:
-            ['Male', 'Female', 'Other']
-                .map(
-                  (g) => Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _gender = g),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          color:
-                              _gender == g
-                                  ? const Color(0xFF1A56BE)
-                                  : Colors.white,
-                          border: Border.all(
-                            color:
-                                _gender == g
-                                    ? const Color(0xFF1A56BE)
-                                    : const Color(0xFFE2E8F0),
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Center(
-                          child: Text(
-                            g,
-                            style: TextStyle(
-                              color:
-                                  _gender == g
-                                      ? Colors.white
-                                      : const Color(0xFF64748B),
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Google Sans',
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-      ),
-      const SizedBox(height: 24),
-      _buildLabel('Date of Birth *'),
-      _buildTextField(
-        _dobCtrl,
-        'YYYY-MM-DD',
-        icon: Icons.calendar_month_rounded,
-      ),
-      const SizedBox(height: 24),
-      _buildLabel('Phone Number *'),
-      _buildTextField(
-        _phoneCtrl,
-        '+856 20 XXXX XXXX',
-        icon: Icons.phone_android_rounded,
-      ),
-    ]);
-  }
-
-  Widget _stepEducationInfo() {
-    return _buildCard([
-      _buildLabel('Student ID *'),
-      _buildTextField(
-        _studentIdCtrl,
-        'Enter your ID number',
-        icon: Icons.badge_outlined,
-      ),
-      const SizedBox(height: 24),
-      _buildLabel('Department (Major) *'),
-      DropdownButtonFormField<String>(
-        initialValue: _selectedMajor,
-        decoration: _inputDecoration('Select major', Icons.category_rounded),
-        items:
-            _majors
-                .map(
-                  (m) => DropdownMenuItem(
-                    value: m,
-                    child: Text(
-                      m,
-                      style: const TextStyle(fontFamily: 'Google Sans'),
-                    ),
-                  ),
-                )
-                .toList(),
-        onChanged: (val) => setState(() => _selectedMajor = val),
-      ),
-      const SizedBox(height: 24),
-      _buildLabel('Graduation Year *'),
-      DropdownButtonFormField<String>(
-        initialValue: _selectedYear,
-        decoration: _inputDecoration(
-          'Select year',
-          Icons.event_available_rounded,
         ),
-        items:
-            _years
-                .map(
-                  (y) => DropdownMenuItem(
-                    value: y,
-                    child: Text(
-                      y,
-                      style: const TextStyle(fontFamily: 'Google Sans'),
-                    ),
-                  ),
-                )
-                .toList(),
-        onChanged: (val) => setState(() => _selectedYear = val),
       ),
-      const SizedBox(height: 24),
-      _buildLabel('Education Level *'),
-      DropdownButtonFormField<String>(
-        initialValue: _selectedEduLevel,
-        decoration: _inputDecoration('Select level', Icons.school_rounded),
-        items:
-            _eduLevels
-                .map(
-                  (l) => DropdownMenuItem(
-                    value: l,
-                    child: Text(
-                      l,
-                      style: const TextStyle(fontFamily: 'Google Sans'),
-                    ),
-                  ),
-                )
-                .toList(),
-        onChanged: (val) => setState(() => _selectedEduLevel = val),
-      ),
-    ]);
+    );
   }
 
-  Widget _stepWorkInfo() {
-    return _buildCard([
-      _buildLabel('Current Job Title'),
-      _buildTextField(
-        _jobTitleCtrl,
-        'e.g. Project Manager',
-        icon: Icons.badge_rounded,
-      ),
-      const SizedBox(height: 24),
-      _buildLabel('Company Name'),
-      _buildTextField(
-        _companyCtrl,
-        'e.g. Tech Solutions Inc.',
-        icon: Icons.business_rounded,
-      ),
-      const SizedBox(height: 24),
-      _buildLabel('Industry'),
-      DropdownButtonFormField<String>(
-        initialValue: _selectedIndustry,
-        decoration: _inputDecoration('Select industry', Icons.domain_rounded),
-        items:
-            _industries
-                .map(
-                  (i) => DropdownMenuItem(
-                    value: i,
-                    child: Text(
-                      i,
-                      style: const TextStyle(fontFamily: 'Google Sans'),
-                    ),
-                  ),
-                )
-                .toList(),
-        onChanged: (val) => setState(() => _selectedIndustry = val),
-      ),
-      const SizedBox(height: 32),
-      _buildLabel('Email Address *'),
-      _buildTextField(_emailCtrl, 'your@email.com', icon: Icons.email_rounded),
-      const SizedBox(height: 24),
-      _buildLabel('Password *'),
-      _buildTextField(
-        _passCtrl,
-        'Minimum 8 characters',
-        icon: Icons.lock_rounded,
-        isPassword: true,
-      ),
-    ]);
-  }
-
-  Widget _buildCard(List<Widget> children) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+  Widget _buildRoleCard(String title, String value, IconData icon) {
+    bool isSelected = _role == value;
+    return GestureDetector(
+      onTap: () => setState(() => _role = value),
       child: Container(
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+          color: isSelected ? const Color(0xFF1A56BE) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF1A56BE) : const Color(0xFFE2E8F0),
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: const Color(0xFF1A56BE).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
+              : null,
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : const Color(0xFF64748B)),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomButtons() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextButton(
-              onPressed: _prevPage,
-              style: TextButton.styleFrom(
-                minimumSize: const Size(0, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Text(
-                _currentStep == 0 ? 'Cancel' : 'Back',
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Google Sans',
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 2,
-            child: ElevatedButton(
-              onPressed: _isRegistering ? null : _nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A56BE),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                minimumSize: const Size(0, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child:
-                  _isRegistering
-                      ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                      : Text(
-                        _currentStep == 2 ? 'Submit Registration' : 'Continue',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          fontFamily: 'Google Sans',
-                        ),
-                      ),
-            ),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildLabel(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        color: Color(0xFF1E293B),
-        fontSize: 14,
-        fontFamily: 'Google Sans',
-      ),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(
+          text,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+        ),
+      );
 
-  InputDecoration _inputDecoration(String hint, IconData? icon) {
+  InputDecoration _inputDecoration(String hint, [IconData? icon]) {
     return InputDecoration(
       hintText: hint,
-      prefixIcon:
-          icon != null
-              ? Icon(icon, size: 20, color: const Color(0xFF1A56BE))
-              : null,
-      hintStyle: const TextStyle(
-        color: Color(0xFF94A3B8),
-        fontSize: 14,
-        fontFamily: 'Google Sans',
-      ),
+      prefixIcon: icon != null ? Icon(icon, size: 20) : null,
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
+      fillColor: Colors.white,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF1A56BE), width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
     );
   }
 
-  Widget _buildTextField(
-    TextEditingController ctrl,
-    String hint, {
-    IconData? icon,
-    bool isPassword = false,
-  }) {
-    return TextField(
+  Widget _buildTextField(TextEditingController ctrl, String hint,
+      {IconData? icon, bool isPassword = false}) {
+    return TextFormField(
       controller: ctrl,
       obscureText: isPassword,
-      style: const TextStyle(fontFamily: 'Google Sans', fontSize: 15),
+      validator: (val) => val == null || val.isEmpty ? 'Required field' : null,
       decoration: _inputDecoration(hint, icon),
     );
   }

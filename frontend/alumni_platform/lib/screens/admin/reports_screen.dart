@@ -43,13 +43,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading)
+    if (_isLoading) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(60),
           child: CircularProgressIndicator(),
         ),
       );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

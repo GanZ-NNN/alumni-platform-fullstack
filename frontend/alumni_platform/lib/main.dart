@@ -1,13 +1,11 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
-import 'dart:ui'; // ຈຳເປັນສຳລັບ PointerDeviceKind
+import 'dart:ui';
 import 'screens/auth/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-// ✅ 1. ສ້າງ Class ນີ້ເພື່ອໃຫ້ Windows ໃຊ້ Mouse ລາກ Scroll ໄດ້
 class MyCustomScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
@@ -24,34 +22,20 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Alumni Platform',
-
-      // ✅ 2. ເອີ້ນໃຊ້ ScrollBehavior ຢູ່ບ່ອນນີ້
       scrollBehavior: MyCustomScrollBehavior(),
-
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1A56BE)),
         useMaterial3: true,
-        // 🛑 Setting Global Font Family to Google Sans 🛑
+        // Font will fallback to default if Google Sans is not in pubspec
         fontFamily: 'Google Sans',
         appBarTheme: const AppBarTheme(
           centerTitle: false,
           elevation: 0,
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
-          titleTextStyle: TextStyle(
-            fontFamily: 'Google Sans',
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(fontFamily: 'Google Sans'),
-          displayMedium: TextStyle(fontFamily: 'Google Sans'),
-          bodyLarge: TextStyle(fontFamily: 'Google Sans'),
-          bodyMedium: TextStyle(fontFamily: 'Google Sans'),
         ),
       ),
+      // If home fails to build, Navigator history will be empty.
       home: const LoginScreen(),
     );
   }

@@ -53,7 +53,7 @@ class PostService {
     try {
       final response = await _apiClient
           .post(
-            '/admin/posts',
+            '/posts',
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'authorId': authorId,
@@ -65,7 +65,7 @@ class PostService {
             withAuth: true,
           )
           .timeout(const Duration(seconds: 15));
-      return response.statusCode == 200;
+      return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       debugPrint('Error createPost: $e');
       return false;

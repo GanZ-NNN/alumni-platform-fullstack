@@ -8,6 +8,7 @@ class JobModel {
   final String contactEmail;
   final String postedBy;
   final String createdAt;
+  final String? phoneNumber;
 
   JobModel({
     required this.id,
@@ -19,6 +20,7 @@ class JobModel {
     required this.contactEmail,
     required this.postedBy,
     required this.createdAt,
+    this.phoneNumber,
   });
 
   factory JobModel.fromMap(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class JobModel {
       contactEmail: json['contactEmail'] ?? '',
       postedBy: json['postedBy'] ?? 'Unknown',
       createdAt: json['createdAt'] ?? '',
+      phoneNumber: json['phoneNumber'],
     );
   }
 }

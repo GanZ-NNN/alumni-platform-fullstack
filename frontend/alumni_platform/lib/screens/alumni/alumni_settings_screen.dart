@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../auth/login_screen.dart';
+import '../auth/change_password_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+import 'edit_profile_screen.dart';
+
+class AlumniSettingsScreen extends StatelessWidget {
   final UserModel user;
-  const SettingsScreen({super.key, required this.user});
+  final Function(UserModel) onUserUpdated;
+  const AlumniSettingsScreen({super.key, required this.user, required this.onUserUpdated});
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +33,29 @@ class SettingsScreen extends StatelessWidget {
                     _buildSettingItem(
                       Icons.person_outline,
                       'Edit Profile',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditProfileScreen(
+                              user: user,
+                              onUserUpdated: onUserUpdated,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     _buildSettingItem(
                       Icons.lock_outline,
                       'Change Password',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ChangePasswordScreen(),
+                          ),
+                        );
+                      },
                     ),
                     _buildSettingItem(
                       Icons.notifications_none,

@@ -50,7 +50,7 @@ class JobService {
             withAuth: true,
           )
           .timeout(const Duration(seconds: 10));
-      return response.statusCode == 200;
+      return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       debugPrint('Error postJob: $e');
       return false;

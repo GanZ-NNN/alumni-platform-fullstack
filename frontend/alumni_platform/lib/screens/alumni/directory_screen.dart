@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart' as launcher;
 import '../../models/user_model.dart';
 import '../../services/user_service.dart';
 import '../../services/image_helper.dart';
@@ -21,7 +22,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   String _selectedMajor = 'ທັງໝົດ';
   String _selectedYear = 'ທຸກປີ';
 
-  // Sample data for filters (You can fetch these from backend if needed)
   final List<String> _majors = [
     'ທັງໝົດ',
     'Computer Science',
@@ -48,22 +48,65 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   void _fetchAlumni() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
-    // Convert 'ທັງໝົດ'/'ທຸກປີ' to empty string for backend filter
     final major = _selectedMajor == 'ທັງໝົດ' ? '' : _selectedMajor;
     final year = _selectedYear == 'ທຸກປີ' ? '' : _selectedYear;
 
-    final data = await _userService.searchAlumni(
-      name: _searchCtrl.text.trim(),
-      major: major,
-      year: year,
-    );
+    try {
+      final data = await _userService.searchAlumni(
+        name: _searchCtrl.text.trim(),
+        major: major,
+        year: year,
+      );
 
-    setState(() {
-      _alumniList = data;
-      _isLoading = false;
-    });
+      if (mounted) {
+        setState(() {
+          _alumniList = data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດຂໍ້ມູນ: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchWhatsApp(String? phone) async {
+    if (phone == null || phone.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ບໍ່ມີເບີໂທລະສັບຕິດຕໍ່.')),
+        );
+      }
+      return;
+    }
+    
+    final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final url = Uri.parse("https://wa.me/$cleanPhone");
+
+    try {
+      if (await launcher.canLaunchUrl(url)) {
+        await launcher.launchUrl(url, mode: launcher.LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('ບໍ່ສາມາດເປີດ WhatsApp ໄດ້.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('ເກີດຂໍ້ຜິດພາດ: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -73,8 +116,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       body: Column(
         children: [
           _buildHeader(),
-
-          // --- Result Counter ---
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             child: Row(
@@ -99,81 +140,81 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               ],
             ),
           ),
-
-          // --- List Area ---
           Expanded(
-            child:
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _alumniList.isEmpty
+                    ? const Center(child: Text('ບໍ່ພົບຂໍ້ມູນສິດເກົ່າ'))
                     : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      itemCount: _alumniList.length,
-                      itemBuilder: (context, index) {
-                        final user = _alumniList[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(color: Colors.grey[100]!),
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(15),
-                            leading: Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(30),
-                                  child: ImageHelper.networkImage(
-                                    user.profileImageUrl,
-                                    width: 60,
-                                    height: 60,
-                                  ),
-                                ),
-                                const Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Icon(
-                                    Icons.check_circle,
-                                    color: Colors.blue,
-                                    size: 20,
-                                  ),
-                                ),
-                              ],
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        itemCount: _alumniList.length,
+                        itemBuilder: (context, index) {
+                          final user = _alumniList[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(color: Colors.grey[200]!),
                             ),
-                            title: Text(
-                              '${user.firstName} ${user.lastName ?? ''}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Google Sans',
+                            child: ListTile(
+                              onTap: () => _launchWhatsApp(user.phoneNumber),
+                              contentPadding: const EdgeInsets.all(15),
+                              leading: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: ImageHelper.networkImage(
+                                      user.profileImageUrl,
+                                      width: 60,
+                                      height: 60,
+                                    ),
+                                  ),
+                                  const Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Icon(
+                                      Icons.check_circle,
+                                      color: Colors.blue,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              title: Text(
+                                '${user.firstName} ${user.lastName ?? ''}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Google Sans',
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${user.major} • ລຸ້ນ ${user.graduationYear}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Google Sans',
+                                    ),
+                                  ),
+                                  Text(
+                                    user.jobPosition ?? 'Alumni',
+                                    style: const TextStyle(
+                                      color: Colors.blueGrey,
+                                      fontSize: 12,
+                                      fontFamily: 'Google Sans',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              trailing: const Icon(
+                                Icons.message_outlined,
+                                color: Color(0xFF1A56BE),
                               ),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${user.major} • ລຸ້ນ ${user.graduationYear}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Google Sans',
-                                  ),
-                                ),
-                                Text(
-                                  user.jobPosition ?? 'Alumni',
-                                  style: const TextStyle(
-                                    color: Colors.blueGrey,
-                                    fontSize: 12,
-                                    fontFamily: 'Google Sans',
-                                  ),
-                                ),
-                              ],
-                            ),
-                            trailing: const Icon(
-                              Icons.chevron_right,
-                              color: Color(0xFF1A56BE),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
@@ -200,11 +241,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         children: [
           _buildTopRow(),
           const SizedBox(height: 20),
-
-          // --- Search Bar ---
           TextField(
             controller: _searchCtrl,
-            onChanged: (_) => _fetchAlumni(), // Trigger on every keystroke
+            onChanged: (_) => _fetchAlumni(),
             decoration: InputDecoration(
               hintText: 'ຄົ້ນຫາຊື່, ພາກວິຊາ...',
               hintStyle: const TextStyle(
@@ -221,10 +260,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 15),
-
-          // --- Filter Row ---
           Row(
             children: [
               Expanded(
@@ -291,13 +327,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             color: Colors.white,
             size: 28,
           ),
-          onPressed:
-              () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const NotificationListScreen(),
-                ),
-              ),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const NotificationListScreen(),
+            ),
+          ),
         ),
         IconButton(
           icon: const Icon(Icons.logout, color: Colors.white, size: 24),
@@ -337,13 +372,12 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             fontSize: 13,
           ),
           onChanged: onChanged,
-          items:
-              items.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+          items: items.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
         ),
       ),
     );

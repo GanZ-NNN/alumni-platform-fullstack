@@ -648,7 +648,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                       showTitles: true,
                       getTitlesWidget: (val, meta) {
                         const titles = ['2020', '2021', '2022', '2023', '2024'];
-                        if (val.toInt() < titles.length)
+                        if (val.toInt() < titles.length) {
                           return Text(
                             titles[val.toInt()],
                             style: TextStyle(
@@ -657,6 +657,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                               fontFamily: 'Google Sans',
                             ),
                           );
+                        }
                         return const Text('');
                       },
                     ),

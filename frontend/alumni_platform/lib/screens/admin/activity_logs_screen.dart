@@ -262,8 +262,9 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
   Widget _buildActionBadge(String action) {
     Color color = Colors.blue;
     if (action.contains('DELETE')) color = Colors.red;
-    if (action.contains('APPROVE') || action.contains('CREATE'))
+    if (action.contains('APPROVE') || action.contains('CREATE')) {
       color = Colors.green;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

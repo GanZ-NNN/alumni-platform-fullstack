@@ -8,13 +8,33 @@ class AdminService {
 
   final ApiClient _apiClient;
 
+  Map<String, dynamic>? _decodeMap(String body) {
+    final decoded = jsonDecode(body);
+    if (decoded is Map<String, dynamic>) {
+      final data = decoded['data'];
+      if (data is Map<String, dynamic>) return data;
+      return decoded;
+    }
+    return null;
+  }
+
+  List<dynamic> _decodeList(String body) {
+    final decoded = jsonDecode(body);
+    if (decoded is List) return decoded;
+    if (decoded is Map<String, dynamic>) {
+      final data = decoded['data'];
+      if (data is List) return data;
+    }
+    return const [];
+  }
+
   Future<List<UserModel>> getAllUsers() async {
     try {
       final response = await _apiClient
           .get('/admin/users', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data = _decodeList(response.body);
         return data.map((json) => UserModel.fromMap(json)).toList();
       }
       debugPrint('❌ Get Users Failed: ${response.statusCode}');
@@ -63,8 +83,41 @@ class AdminService {
       final response = await _apiClient
           .get('/admin/stats', withAuth: true)
           .timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) return jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final raw = _decodeMap(response.body);
+        if (raw == null) return null;
+
+        // Normalize keys across backend versions.
+        final totalAlumni = raw['totalAlumni'] ?? raw['totalUsers'] ?? 0;
+        return {
+          'totalAlumni': totalAlumni,
+          'pendingUsers': raw['pendingUsers'] ?? raw['pending'] ?? 0,
+          'totalPosts': raw['totalPosts'] ?? raw['posts'] ?? 0,
+          'totalJobs': raw['totalJobs'] ?? raw['jobs'] ?? 0,
+        };
+      }
       debugPrint('❌ Stats Error: ${response.statusCode}');
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getPublicStats() async {
+    try {
+      final response = await _apiClient
+          .get('/auth/public-stats', withAuth: true)
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final raw = _decodeMap(response.body);
+        if (raw == null) return null;
+        return {
+          'totalAlumni': raw['totalAlumni'] ?? 0,
+          'totalPosts': raw['totalPosts'] ?? 0,
+          'totalJobs': raw['totalJobs'] ?? 0,
+        };
+      }
+      debugPrint('❌ Public Stats Error: ${response.statusCode}');
       return null;
     } catch (e) {
       return null;
@@ -76,7 +129,7 @@ class AdminService {
       final response = await _apiClient
           .get('/admin/logs', withAuth: true)
           .timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) return jsonDecode(response.body);
+      if (response.statusCode == 200) return _decodeList(response.body);
       return [];
     } catch (e) {
       return [];
@@ -89,7 +142,7 @@ class AdminService {
           .get('/admin/reports/majors', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
-        return jsonDecode(res.body);
+        return _decodeList(res.body);
       } else {
         debugPrint('❌ Major Report Failed: ${res.statusCode} ${res.body}');
         return [];
@@ -106,7 +159,7 @@ class AdminService {
           .get('/admin/reports/years', withAuth: true)
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
-        return jsonDecode(res.body);
+        return _decodeList(res.body);
       } else {
         debugPrint('❌ Year Report Failed: ${res.statusCode}');
         return [];
@@ -122,7 +175,7 @@ class AdminService {
       final res = await _apiClient
           .get('/admin/reports/employment', withAuth: true)
           .timeout(const Duration(seconds: 10));
-      if (res.statusCode == 200) return jsonDecode(res.body);
+      if (res.statusCode == 200) return _decodeList(res.body);
       return [];
     } catch (e) {
       return [];
@@ -134,7 +187,7 @@ class AdminService {
       final res = await _apiClient
           .get('/admin/reports/workplaces', withAuth: true)
           .timeout(const Duration(seconds: 10));
-      return res.statusCode == 200 ? jsonDecode(res.body) : [];
+      return res.statusCode == 200 ? _decodeList(res.body) : [];
     } catch (e) {
       return [];
     }
@@ -145,7 +198,7 @@ class AdminService {
       final res = await _apiClient
           .get('/admin/reports/positions', withAuth: true)
           .timeout(const Duration(seconds: 10));
-      return res.statusCode == 200 ? jsonDecode(res.body) : [];
+      return res.statusCode == 200 ? _decodeList(res.body) : [];
     } catch (e) {
       return [];
     }

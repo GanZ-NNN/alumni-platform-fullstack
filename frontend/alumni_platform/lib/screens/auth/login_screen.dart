@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../admin/admin_dashboard.dart';
 import '../alumni/home_screen.dart';
 import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -207,7 +208,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                            );
+                          },
+                          child: const Text(
+                            'ລືມລະຫັດຜ່ານ?',
+                            style: TextStyle(
+                              color: Color(0xFF1A56BE),
+                              fontFamily: 'Google Sans',
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
 
                       // Login Button
                       SizedBox(

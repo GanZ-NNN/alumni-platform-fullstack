@@ -50,21 +50,15 @@ class AuthService {
     return null;
   }
 
-  Future<bool> register({
+  Future<Map<String, dynamic>?> register({
     required String email,
     required String password,
     required String firstName,
     required String lastName,
-    required String major,
-    required String graduationYear,
-    required String phoneNumber,
     required String gender,
     required String dob,
     required String studentId,
-    required String educationLevel,
-    required String industry,
-    required String jobTitle,
-    required String companyName,
+    required String role,
   }) async {
     try {
       final response = await _apiClient.post(
@@ -75,31 +69,27 @@ class AuthService {
           'password': password,
           'firstName': firstName,
           'lastName': lastName,
-          'major': major,
-          'graduationYear': graduationYear,
-          'phoneNumber': phoneNumber,
           'gender': gender,
           'dob': dob,
           'studentId': studentId,
-          'educationLevel': educationLevel,
-          'industry': industry,
-          'jobTitle': jobTitle,
-          'companyName': companyName,
+          'role': role,
         }),
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
     } catch (e) {
       print('Register Error: $e');
     }
-    return false;
+    return null;
   }
 
-  Future<bool> updateProfile(UserModel user) async {
+  Future<bool> updateProfile(Map<String, dynamic> data) async {
     try {
       final response = await _apiClient.put(
-        '/users/${user.id}',
+        '/auth/update-profile',
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(user.toMap()),
+        body: jsonEncode(data),
         withAuth: true,
       );
       return response.statusCode == 200;
@@ -142,5 +132,55 @@ class AuthService {
 
   Future<void> logout() async {
     await _tokenStorage.clearTokens();
+  }
+
+  Future<bool> changePassword(String oldPassword, String newPassword) async {
+    try {
+      final response = await _apiClient.post(
+        '/auth/change-password',
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'oldPassword': oldPassword,
+          'newPassword': newPassword,
+        }),
+        withAuth: true,
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Change Password Error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> forgotPassword(String email) async {
+    try {
+      final response = await _apiClient.post(
+        '/auth/forgot-password',
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Forgot Password Error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> resetPassword(String email, String code, String newPassword) async {
+    try {
+      final response = await _apiClient.post(
+        '/auth/reset-password',
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'code': code,
+          'newPassword': newPassword,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Reset Password Error: $e');
+    }
+    return false;
   }
 }

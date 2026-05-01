@@ -37,8 +37,16 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
   Future<void> _loadAllData() async {
     setState(() => _isLoading = true);
     try {
-      final statsData = await _adminService.getDashboardStats();
-      final majorsData = await _adminService.getMajorReports();
+      final bool isAdmin = widget.user.role == 'admin';
+      
+      final Map<String, dynamic>? statsData = isAdmin 
+          ? await _adminService.getDashboardStats() 
+          : await _adminService.getPublicStats();
+          
+      final List<dynamic> majorsData = isAdmin 
+          ? await _adminService.getMajorReports() 
+          : []; // Non-admins don't get major reports for now
+
       final postsData = await _postService.getPosts();
 
       setState(() {
@@ -50,6 +58,127 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
     } catch (e) {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _showCreatePostDialog() {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+    final typeController = TextEditingController(text: 'news');
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text(
+              'ສ້າງໂພສໃໝ່',
+              style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Google Sans'),
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: titleController,
+                        style: const TextStyle(fontFamily: 'Google Sans'),
+                        decoration: InputDecoration(
+                          labelText: 'ຫົວຂໍ້',
+                          labelStyle: const TextStyle(fontFamily: 'Google Sans'),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        validator: (v) => (v == null || v.isEmpty) ? 'ກະລຸນາປ້ອນຫົວຂໍ້' : null,
+                      ),
+                      const SizedBox(height: 15),
+                      TextFormField(
+                        controller: contentController,
+                        maxLines: 5,
+                        style: const TextStyle(fontFamily: 'Google Sans'),
+                        decoration: InputDecoration(
+                          labelText: 'ເນື້ອຫາ',
+                          labelStyle: const TextStyle(fontFamily: 'Google Sans'),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        validator: (v) => (v == null || v.isEmpty) ? 'ກະລຸນາປ້ອນເນື້ອຫາ' : null,
+                      ),
+                      const SizedBox(height: 15),
+                      DropdownButtonFormField<String>(
+                        value: 'news',
+                        decoration: InputDecoration(
+                          labelText: 'ປະເພດ',
+                          labelStyle: const TextStyle(fontFamily: 'Google Sans'),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'news', child: Text('ຂ່າວສານ', style: TextStyle(fontFamily: 'Google Sans'))),
+                          DropdownMenuItem(value: 'event', child: Text('ກິດຈະກຳ', style: TextStyle(fontFamily: 'Google Sans'))),
+                          DropdownMenuItem(value: 'success_story', child: Text('ເລື່ອງລາວຄວາມສຳເລັດ', style: TextStyle(fontFamily: 'Google Sans'))),
+                        ],
+                        onChanged: (v) => typeController.text = v ?? 'news',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('ຍົກເລີກ', style: TextStyle(color: Colors.grey, fontFamily: 'Google Sans')),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (formKey.currentState!.validate()) {
+                    Navigator.pop(context);
+                    setState(() => _isLoading = true);
+                    final success = await _postService.createPost(
+                      authorId: widget.user.id,
+                      title: titleController.text.trim(),
+                      content: contentController.text.trim(),
+                      type: typeController.text,
+                    );
+
+                    if (success) {
+                      _loadAllData();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('ສ້າງໂພສສຳເລັດ', style: TextStyle(fontFamily: 'Google Sans'))),
+                        );
+                      }
+                    } else {
+                      setState(() => _isLoading = false);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('ເກີດຂໍ້ຜິດພາດໃນການສ້າງໂພສ', style: TextStyle(fontFamily: 'Google Sans'))),
+                        );
+                      }
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1A56BE),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text('ໂພສ', style: TextStyle(fontFamily: 'Google Sans')),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
@@ -83,6 +212,13 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
           ),
         ),
       ),
+      floatingActionButton: widget.user.role == 'alumni' || widget.user.role == 'admin'
+          ? FloatingActionButton(
+              onPressed: _showCreatePostDialog,
+              backgroundColor: const Color(0xFF1A56BE),
+              child: const Icon(Icons.edit, color: Colors.white),
+            )
+          : null,
     );
   }
 
@@ -258,13 +394,14 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
   }
 
   Widget _buildEventsList(List<PostModel> events) {
-    if (events.isEmpty)
+    if (events.isEmpty) {
       return const Center(
         child: Text(
           "ຍັງບໍ່ມີກິດຈະກຳ",
           style: TextStyle(fontFamily: 'Google Sans'),
         ),
       );
+    }
     return Column(
       children:
           events
@@ -290,7 +427,18 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
                     e.createdAt.substring(0, 10),
                     style: const TextStyle(fontFamily: 'Google Sans'),
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: widget.user.role == 'guest' 
+                    ? const Icon(Icons.chevron_right)
+                    : ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1A56BE),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                          textStyle: const TextStyle(fontSize: 12, fontFamily: 'Google Sans'),
+                        ),
+                        child: const Text('ລົງທະບຽນ'),
+                      ),
                 ),
               )
               .toList(),
@@ -298,13 +446,14 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
   }
 
   Widget _buildNewsList(List<PostModel> news) {
-    if (news.isEmpty)
+    if (news.isEmpty) {
       return const Center(
         child: Text(
           "ຍັງບໍ່ມີຂ່າວສານ",
           style: TextStyle(fontFamily: 'Google Sans'),
         ),
       );
+    }
     return Column(
       children:
           news

@@ -6,7 +6,7 @@ import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_service.dart';
 import 'notification_list_screen.dart';
-import 'settings_screen.dart';
+import 'alumni_settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -45,6 +45,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isAlumni = currentUser.role == 'alumni';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SingleChildScrollView(
@@ -84,55 +86,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       'Email Address',
                       currentUser.email,
                     ),
-                  ]),
-                  const SizedBox(height: 24),
-                  _buildSection('Education Background', [
-                    _buildDetailItem(
-                      Icons.badge_outlined,
-                      'Student ID',
-                      currentUser.studentId ?? 'Not Specified',
-                    ),
-                    _buildDetailItem(
-                      Icons.category_rounded,
-                      'Department (Major)',
-                      currentUser.major ?? 'Not Specified',
-                    ),
-                    _buildDetailItem(
-                      Icons.school_outlined,
-                      'Education Level',
-                      currentUser.educationLevel ?? 'Not Specified',
-                    ),
-                    _buildDetailItem(
-                      Icons.event_available_rounded,
-                      'Graduation Year',
-                      currentUser.graduationYear ?? 'Not Specified',
-                    ),
-                  ]),
-                  const SizedBox(height: 24),
-                  _buildSection('Current Work', [
-                    _buildDetailItem(
-                      Icons.work_outline_rounded,
-                      'Job Status',
-                      currentUser.workStatus,
-                    ),
-                    if (currentUser.workStatus == 'Working') ...[
+                    // Guest only sees Student ID in Personal Details
+                    if (!isAlumni)
                       _buildDetailItem(
-                        Icons.badge_rounded,
-                        'Job Title',
-                        currentUser.jobPosition ?? 'Not Specified',
+                        Icons.badge_outlined,
+                        'Student ID',
+                        currentUser.studentId ?? 'Not Specified',
+                      ),
+                  ]),
+                  if (isAlumni) ...[
+                    const SizedBox(height: 24),
+                    _buildSection('Education Background', [
+                      _buildDetailItem(
+                        Icons.badge_outlined,
+                        'Student ID',
+                        currentUser.studentId ?? 'Not Specified',
                       ),
                       _buildDetailItem(
-                        Icons.business_rounded,
-                        'Company',
-                        currentUser.workplace ?? 'Not Specified',
+                        Icons.category_rounded,
+                        'Department (Major)',
+                        currentUser.major ?? 'Not Specified',
                       ),
                       _buildDetailItem(
-                        Icons.domain_rounded,
-                        'Industry',
-                        currentUser.industry ?? 'Not Specified',
+                        Icons.school_outlined,
+                        'Education Level',
+                        currentUser.educationLevel ?? 'Not Specified',
                       ),
-                    ],
-                  ]),
+                      _buildDetailItem(
+                        Icons.event_available_rounded,
+                        'Graduation Year',
+                        currentUser.graduationYear ?? 'Not Specified',
+                      ),
+                    ]),
+                    const SizedBox(height: 24),
+                    _buildSection('Current Work', [
+                      _buildDetailItem(
+                        Icons.work_outline_rounded,
+                        'Job Status',
+                        currentUser.workStatus,
+                      ),
+                      if (currentUser.workStatus == 'Working') ...[
+                        _buildDetailItem(
+                          Icons.badge_rounded,
+                          'Job Title',
+                          currentUser.jobPosition ?? 'Not Specified',
+                        ),
+                        _buildDetailItem(
+                          Icons.business_rounded,
+                          'Company',
+                          currentUser.workplace ?? 'Not Specified',
+                        ),
+                        _buildDetailItem(
+                          Icons.domain_rounded,
+                          'Industry',
+                          currentUser.industry ?? 'Not Specified',
+                        ),
+                      ],
+                    ]),
+                  ],
                   const SizedBox(height: 40),
                 ],
               ),
@@ -170,14 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
+                  const SizedBox(width: 48), // Placeholder for symmetry
                   Row(
                     children: [
                       IconButton(
@@ -200,7 +204,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               context,
                               MaterialPageRoute(
                                 builder:
-                                    (_) => SettingsScreen(user: currentUser),
+                                    (_) => AlumniSettingsScreen(
+                                      user: currentUser,
+                                      onUserUpdated: (updatedUser) {
+                                        setState(() {
+                                          currentUser = updatedUser;
+                                        });
+                                        widget.onUserUpdated(updatedUser);
+                                      },
+                                    ),
                               ),
                             ),
                         icon: const Icon(
