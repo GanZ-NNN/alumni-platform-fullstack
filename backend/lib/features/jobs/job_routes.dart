@@ -43,7 +43,9 @@ class JobRoutes {
             'salaryRange': row[5] ?? '',
             'contactEmail': row[6] ?? '',
             'postedBy': row[7],
-            'createdAt': createdAt is DateTime ? createdAt.toIso8601String() : '$createdAt',
+            'createdAt': createdAt is DateTime
+                ? createdAt.toIso8601String()
+                : '$createdAt',
             'phoneNumber': row[9],
           };
         }).toList();
@@ -67,7 +69,11 @@ class JobRoutes {
       try {
         final jobId = int.tryParse(id);
         if (jobId == null) {
-          return ApiResponse.error(400, code: 'INVALID_ID', message: 'Invalid job ID');
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_ID',
+            message: 'Invalid job ID',
+          );
         }
 
         final result = await DatabaseConfig.connection.execute(
@@ -102,28 +108,35 @@ class JobRoutes {
         final row = result.first;
         final rawPhone = row[10]?.toString() ?? '';
         final cleanPhone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
-        
+
         String? waLink;
         if (cleanPhone.isNotEmpty) {
-          final message = Uri.encodeComponent('ສະບາຍດີ, ຂ້ອຍສົນໃຈສະໝັກວຽກຕຳແໜ່ງ ${row[1]}');
+          final message = Uri.encodeComponent(
+            'ສະບາຍດີ, ຂ້ອຍສົນໃຈສະໝັກວຽກຕຳແໜ່ງ ${row[1]}',
+          );
           waLink = "https://wa.me/$cleanPhone?text=$message";
         }
 
-        return ApiResponse.success(200, data: {
-          'id': row[0],
-          'jobTitle': row[1],
-          'companyName': row[2],
-          'description': row[3],
-          'location': row[4],
-          'salaryRange': row[5],
-          'contactEmail': row[6],
-          'createdAt': row[7] is DateTime ? (row[7] as DateTime).toIso8601String() : row[7]?.toString(),
-          'postedBy': '${row[8] ?? ''} ${row[9] ?? ''}'.trim().isEmpty 
-              ? 'Unknown' 
-              : '${row[8] ?? ''} ${row[9] ?? ''}'.trim(),
-          'applyWhatsapp': waLink,
-          'phoneNumber': rawPhone,
-        });
+        return ApiResponse.success(
+          200,
+          data: {
+            'id': row[0],
+            'jobTitle': row[1],
+            'companyName': row[2],
+            'description': row[3],
+            'location': row[4],
+            'salaryRange': row[5],
+            'contactEmail': row[6],
+            'createdAt': row[7] is DateTime
+                ? (row[7] as DateTime).toIso8601String()
+                : row[7]?.toString(),
+            'postedBy': '${row[8] ?? ''} ${row[9] ?? ''}'.trim().isEmpty
+                ? 'Unknown'
+                : '${row[8] ?? ''} ${row[9] ?? ''}'.trim(),
+            'applyWhatsapp': waLink,
+            'phoneNumber': rawPhone,
+          },
+        );
       } catch (e) {
         return ApiResponse.error(
           500,
@@ -135,7 +148,7 @@ class JobRoutes {
     });
 
     // 3. ໂພສວຽກໃໝ່ (ສະເພາະ Alumni ແລະ Admin)
-    final createHandler = (Request request) async {
+    Future<Response> createHandler(Request request) async {
       final user = request.context['user'] as Map<String, dynamic>?;
       final role = user?['role'];
       final userId = int.tryParse(user?['userId']?.toString() ?? '');
@@ -149,17 +162,25 @@ class JobRoutes {
       }
 
       if (userId == null) {
-        return ApiResponse.error(401, code: 'UNAUTHORIZED', message: 'User ID not found in token');
+        return ApiResponse.error(
+          401,
+          code: 'UNAUTHORIZED',
+          message: 'User ID not found in token',
+        );
       }
 
       try {
         final content = await request.readAsString();
         if (content.isEmpty) {
-          return ApiResponse.error(400, code: 'EMPTY_BODY', message: 'Request body is empty');
+          return ApiResponse.error(
+            400,
+            code: 'EMPTY_BODY',
+            message: 'Request body is empty',
+          );
         }
-        
+
         final body = jsonDecode(content);
-        
+
         await DatabaseConfig.connection.execute(
           Sql.named(
             'INSERT INTO jobs (job_title, company_name, description, location, salary_range, contact_email, posted_by_id) '
@@ -185,11 +206,17 @@ class JobRoutes {
           details: {'reason': e.toString()},
         );
       }
-    };
+    }
 
-    router.post('/create', Pipeline().addMiddleware(authMiddleware()).addHandler(createHandler));
+    router.post(
+      '/create',
+      Pipeline().addMiddleware(authMiddleware()).addHandler(createHandler),
+    );
     // Also support POST / for backward compatibility if needed, but /create is clearer.
-    router.post('/', Pipeline().addMiddleware(authMiddleware()).addHandler(createHandler));
+    router.post(
+      '/',
+      Pipeline().addMiddleware(authMiddleware()).addHandler(createHandler),
+    );
 
     return router;
   }

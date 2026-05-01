@@ -37,9 +37,9 @@ class _JobsScreenState extends State<JobsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching jobs: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error fetching jobs: $e')));
       }
     }
   }
@@ -78,9 +78,9 @@ class _JobsScreenState extends State<JobsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -103,7 +103,10 @@ class _JobsScreenState extends State<JobsScreen> {
             ),
             title: const Text(
               'ເພີ່ມປະກາດຮັບສະໝັກວຽກ',
-              style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Google Sans'),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Google Sans',
+              ),
             ),
             content: SizedBox(
               width: double.maxFinite,
@@ -158,7 +161,13 @@ class _JobsScreenState extends State<JobsScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('ຍົກເລີກ', style: TextStyle(color: Colors.grey, fontFamily: 'Google Sans')),
+                child: const Text(
+                  'ຍົກເລີກ',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontFamily: 'Google Sans',
+                  ),
+                ),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -179,14 +188,24 @@ class _JobsScreenState extends State<JobsScreen> {
                       _fetchJobs();
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('ເພີ່ມປະກາດວຽກສຳເລັດ', style: TextStyle(fontFamily: 'Google Sans'))),
+                          const SnackBar(
+                            content: Text(
+                              'ເພີ່ມປະກາດວຽກສຳເລັດ',
+                              style: TextStyle(fontFamily: 'Google Sans'),
+                            ),
+                          ),
                         );
                       }
                     } else {
                       setState(() => _isLoading = false);
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('ເກີດຂໍ້ຜິດພາດໃນການເພີ່ມ', style: TextStyle(fontFamily: 'Google Sans'))),
+                          const SnackBar(
+                            content: Text(
+                              'ເກີດຂໍ້ຜິດພາດໃນການເພີ່ມ',
+                              style: TextStyle(fontFamily: 'Google Sans'),
+                            ),
+                          ),
                         );
                       }
                     }
@@ -199,7 +218,10 @@ class _JobsScreenState extends State<JobsScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('ປະກາດ', style: TextStyle(fontFamily: 'Google Sans')),
+                child: const Text(
+                  'ປະກາດ',
+                  style: TextStyle(fontFamily: 'Google Sans'),
+                ),
               ),
             ],
           ),
@@ -240,7 +262,9 @@ class _JobsScreenState extends State<JobsScreen> {
   @override
   Widget build(BuildContext context) {
     // Only Alumni and Admin can post jobs
-    final canPost = widget.currentUser.role == 'alumni' || widget.currentUser.role == 'admin';
+    final canPost =
+        widget.currentUser.role == 'alumni' ||
+        widget.currentUser.role == 'admin';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
@@ -336,7 +360,11 @@ class _JobsScreenState extends State<JobsScreen> {
                 const SizedBox(height: 10),
                 const Text(
                   'ໂອກາດຈາກນັກສຶກສາເກົ່າ ແລະ ອາຈານ',
-                  style: TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'Google Sans'),
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    fontFamily: 'Google Sans',
+                  ),
                 ),
                 const SizedBox(height: 15),
                 TextField(
@@ -363,7 +391,12 @@ class _JobsScreenState extends State<JobsScreen> {
                 _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _jobs.isEmpty
-                    ? const Center(child: Text('ບໍ່ມີຂໍ້ມູນວຽກ', style: TextStyle(fontFamily: 'Google Sans')))
+                    ? const Center(
+                      child: Text(
+                        'ບໍ່ມີຂໍ້ມູນວຽກ',
+                        style: TextStyle(fontFamily: 'Google Sans'),
+                      ),
+                    )
                     : ListView.builder(
                       padding: const EdgeInsets.all(15),
                       itemCount: _jobs.length,
@@ -461,7 +494,12 @@ class _JobsScreenState extends State<JobsScreen> {
                                           ),
                                         ),
                                       ),
-                                      child: const Text('ສະໝັກ', style: TextStyle(fontFamily: 'Google Sans')),
+                                      child: const Text(
+                                        'ສະໝັກ',
+                                        style: TextStyle(
+                                          fontFamily: 'Google Sans',
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -474,11 +512,14 @@ class _JobsScreenState extends State<JobsScreen> {
           ),
         ],
       ),
-      floatingActionButton: canPost ? FloatingActionButton(
-        onPressed: _showPostJobDialog,
-        backgroundColor: const Color(0xFF1A56BE),
-        child: const Icon(Icons.add, color: Colors.white),
-      ) : null,
+      floatingActionButton:
+          canPost
+              ? FloatingActionButton(
+                onPressed: _showPostJobDialog,
+                backgroundColor: const Color(0xFF1A56BE),
+                child: const Icon(Icons.add, color: Colors.white),
+              )
+              : null,
     );
   }
 

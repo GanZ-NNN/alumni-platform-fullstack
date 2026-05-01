@@ -12,7 +12,8 @@ class AdminRoutes {
 
     // Users
     router.get('/users', (Request request) async {
-      final result = await DatabaseConfig.connection.execute(Sql.named('''
+      final result = await DatabaseConfig.connection.execute(
+        Sql.named('''
         SELECT
           id,
           email,
@@ -27,7 +28,8 @@ class AdminRoutes {
           created_at
         FROM users
         ORDER BY created_at DESC, id DESC
-      '''));
+      '''),
+      );
 
       final users = result.map((r) {
         return {
@@ -136,7 +138,8 @@ class AdminRoutes {
 
     // Activity logs
     router.get('/logs', (Request request) async {
-      final result = await DatabaseConfig.connection.execute(Sql.named('''
+      final result = await DatabaseConfig.connection.execute(
+        Sql.named('''
         SELECT
           l.id,
           l.action,
@@ -148,7 +151,8 @@ class AdminRoutes {
         LEFT JOIN users u ON u.id = l.user_id
         ORDER BY l.created_at DESC, l.id DESC
         LIMIT 200
-      '''));
+      '''),
+      );
 
       final logs = result.map((r) {
         final createdAt = r[3];
@@ -156,7 +160,9 @@ class AdminRoutes {
           'id': r[0],
           'action': r[1],
           'details': r[2],
-          'createdAt': createdAt is DateTime ? createdAt.toIso8601String() : '$createdAt',
+          'createdAt': createdAt is DateTime
+              ? createdAt.toIso8601String()
+              : '$createdAt',
           'userId': r[4],
           'userEmail': r[5],
         };
@@ -170,16 +176,16 @@ class AdminRoutes {
 
     // Reports
     router.get('/reports/majors', (Request request) async {
-      final result = await DatabaseConfig.connection.execute(Sql.named('''
+      final result = await DatabaseConfig.connection.execute(
+        Sql.named('''
         SELECT COALESCE(major, 'Unknown') AS major, COUNT(*) AS total
         FROM users
         GROUP BY COALESCE(major, 'Unknown')
         ORDER BY total DESC, major ASC
-      '''));
+      '''),
+      );
 
-      final rows = result
-          .map((r) => {'major': r[0], 'count': r[1]})
-          .toList();
+      final rows = result.map((r) => {'major': r[0], 'count': r[1]}).toList();
 
       return Response.ok(
         jsonEncode(rows),
@@ -188,16 +194,16 @@ class AdminRoutes {
     });
 
     router.get('/reports/years', (Request request) async {
-      final result = await DatabaseConfig.connection.execute(Sql.named('''
+      final result = await DatabaseConfig.connection.execute(
+        Sql.named('''
         SELECT COALESCE(graduation_year, 0) AS year, COUNT(*) AS total
         FROM users
         GROUP BY COALESCE(graduation_year, 0)
         ORDER BY year ASC
-      '''));
+      '''),
+      );
 
-      final rows = result
-          .map((r) => {'year': r[0], 'count': r[1]})
-          .toList();
+      final rows = result.map((r) => {'year': r[0], 'count': r[1]}).toList();
 
       return Response.ok(
         jsonEncode(rows),
@@ -207,11 +213,13 @@ class AdminRoutes {
 
     // Posts (admin)
     router.get('/posts', (Request request) async {
-      final result = await DatabaseConfig.connection.execute(Sql.named('''
+      final result = await DatabaseConfig.connection.execute(
+        Sql.named('''
         SELECT p.id, p.title, p.content, p.type, p.image_url, p.created_at
         FROM posts p
         ORDER BY p.created_at DESC, p.id DESC
-      '''));
+      '''),
+      );
 
       final posts = result.map((r) {
         final createdAt = r[5];
@@ -221,7 +229,9 @@ class AdminRoutes {
           'content': r[2],
           'type': r[3] ?? 'news',
           'imageUrl': r[4],
-          'createdAt': createdAt is DateTime ? createdAt.toIso8601String() : '$createdAt',
+          'createdAt': createdAt is DateTime
+              ? createdAt.toIso8601String()
+              : '$createdAt',
         };
       }).toList();
 
@@ -374,12 +384,7 @@ class AdminRoutes {
         INSERT INTO activity_logs (user_id, action, details)
         VALUES (@userId, @action, @details)
       '''),
-      parameters: {
-        'userId': userId,
-        'action': action,
-        'details': details,
-      },
+      parameters: {'userId': userId, 'action': action, 'details': details},
     );
   }
 }
-

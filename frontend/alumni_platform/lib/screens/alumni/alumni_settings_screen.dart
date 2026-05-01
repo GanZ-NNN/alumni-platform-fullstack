@@ -8,7 +8,11 @@ import 'edit_profile_screen.dart';
 class AlumniSettingsScreen extends StatelessWidget {
   final UserModel user;
   final Function(UserModel) onUserUpdated;
-  const AlumniSettingsScreen({super.key, required this.user, required this.onUserUpdated});
+  const AlumniSettingsScreen({
+    super.key,
+    required this.user,
+    required this.onUserUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +41,11 @@ class AlumniSettingsScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => EditProfileScreen(
-                              user: user,
-                              onUserUpdated: onUserUpdated,
-                            ),
+                            builder:
+                                (_) => EditProfileScreen(
+                                  user: user,
+                                  onUserUpdated: onUserUpdated,
+                                ),
                           ),
                         );
                       },

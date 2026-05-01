@@ -13,11 +13,13 @@ class PostRoutes {
     // 1. Get all posts (Public)
     router.get('/', (Request request) async {
       try {
-        final result = await DatabaseConfig.connection.execute(Sql.named('''
+        final result = await DatabaseConfig.connection.execute(
+          Sql.named('''
           SELECT id, title, content, type, image_url, created_at, author_id
           FROM posts
           ORDER BY created_at DESC, id DESC
-        '''));
+        '''),
+        );
 
         final posts = result.map((r) {
           final createdAt = r[5];
@@ -27,7 +29,9 @@ class PostRoutes {
             'content': r[2],
             'type': r[3] ?? 'news',
             'imageUrl': r[4],
-            'createdAt': createdAt is DateTime ? createdAt.toIso8601String() : '$createdAt',
+            'createdAt': createdAt is DateTime
+                ? createdAt.toIso8601String()
+                : '$createdAt',
             'authorId': r[6],
           };
         }).toList();
@@ -37,22 +41,34 @@ class PostRoutes {
           headers: {'Content-Type': 'application/json'},
         );
       } catch (e) {
-        return ApiResponse.error(500, code: 'FETCH_POSTS_FAILED', message: 'Failed to fetch posts');
+        return ApiResponse.error(
+          500,
+          code: 'FETCH_POSTS_FAILED',
+          message: 'Failed to fetch posts',
+        );
       }
     });
 
     // 2. Create post (Alumni & Admin)
-    final createHandler = (Request request) async {
+    Future<Response> createHandler(Request request) async {
       final user = request.context['user'] as Map<String, dynamic>?;
       final role = user?['role'];
       final authorId = int.tryParse(user?['userId']?.toString() ?? '');
 
       if (role != 'alumni' && role != 'admin') {
-        return ApiResponse.error(403, code: 'UNAUTHORIZED_ROLE', message: 'Unauthorized to create posts');
+        return ApiResponse.error(
+          403,
+          code: 'UNAUTHORIZED_ROLE',
+          message: 'Unauthorized to create posts',
+        );
       }
 
       if (authorId == null) {
-        return ApiResponse.error(401, code: 'UNAUTHORIZED', message: 'User ID not found');
+        return ApiResponse.error(
+          401,
+          code: 'UNAUTHORIZED',
+          message: 'User ID not found',
+        );
       }
 
       try {
@@ -62,8 +78,15 @@ class PostRoutes {
         final type = body['type']?.toString() ?? 'news';
         final imageUrl = body['imageUrl']?.toString();
 
-        if (title == null || title.isEmpty || content == null || content.isEmpty) {
-          return ApiResponse.error(400, code: 'INVALID_INPUT', message: 'Title and content are required');
+        if (title == null ||
+            title.isEmpty ||
+            content == null ||
+            content.isEmpty) {
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_INPUT',
+            message: 'Title and content are required',
+          );
         }
 
         await DatabaseConfig.connection.execute(
@@ -82,12 +105,22 @@ class PostRoutes {
 
         return ApiResponse.success(201, message: 'Post created successfully');
       } catch (e) {
-        return ApiResponse.error(500, code: 'CREATE_POST_FAILED', message: 'Failed to create post');
+        return ApiResponse.error(
+          500,
+          code: 'CREATE_POST_FAILED',
+          message: 'Failed to create post',
+        );
       }
-    };
+    }
 
-    router.post('/', Pipeline().addMiddleware(authMiddleware()).addHandler(createHandler));
-    router.post('/create', Pipeline().addMiddleware(authMiddleware()).addHandler(createHandler));
+    router.post(
+      '/',
+      Pipeline().addMiddleware(authMiddleware()).addHandler(createHandler),
+    );
+    router.post(
+      '/create',
+      Pipeline().addMiddleware(authMiddleware()).addHandler(createHandler),
+    );
 
     return router;
   }

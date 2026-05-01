@@ -46,7 +46,9 @@ class RegistrationSuccessScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      isPending ? 'Registration Successful!' : 'Welcome to FNS!',
+                      isPending
+                          ? 'Registration Successful!'
+                          : 'Welcome to FNS!',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 28,

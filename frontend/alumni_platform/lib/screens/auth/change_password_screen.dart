@@ -62,7 +62,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
-        title: const Text('Change Password', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Google Sans')),
+        title: const Text(
+          'Change Password',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Google Sans',
+          ),
+        ),
         backgroundColor: const Color(0xFF1A56BE),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -74,33 +80,42 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           children: [
             const Text(
               'Set a new password to keep your account secure.',
-              style: TextStyle(color: Colors.grey, fontSize: 14, fontFamily: 'Google Sans'),
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+                fontFamily: 'Google Sans',
+              ),
             ),
             const SizedBox(height: 30),
-            
+
             _buildPasswordField(
               controller: _oldPasswordController,
               label: 'Old Password',
               obscure: _obscureOld,
               onToggle: () => setState(() => _obscureOld = !_obscureOld),
             ),
-            
+
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const ForgotPasswordScreen(),
+                    ),
                   );
                 },
                 child: const Text(
                   'Forgot Password?',
-                  style: TextStyle(color: Color(0xFF1A56BE), fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Color(0xFF1A56BE),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 10),
             _buildPasswordField(
               controller: _newPasswordController,
@@ -108,13 +123,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               obscure: _obscureNew,
               onToggle: () => setState(() => _obscureNew = !_obscureNew),
             ),
-            
+
             const SizedBox(height: 20),
             _buildPasswordField(
               controller: _confirmPasswordController,
               label: 'Confirm New Password',
               obscure: _obscureConfirm,
-              onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
+              onToggle:
+                  () => setState(() => _obscureConfirm = !_obscureConfirm),
             ),
 
             const SizedBox(height: 40),
@@ -125,15 +141,23 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 onPressed: _isLoading ? null : _handleChangePassword,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1A56BE),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                   elevation: 0,
                 ),
-                child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text(
-                      'Update Password',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Google Sans'),
-                    ),
+                child:
+                    _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                          'Update Password',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Google Sans',
+                          ),
+                        ),
               ),
             ),
           ],
@@ -153,7 +177,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: Colors.black87,
+          ),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -166,7 +194,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
             prefixIcon: const Icon(Icons.lock_outline, size: 20),
             suffixIcon: IconButton(
-              icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, size: 20),
+              icon: Icon(
+                obscure ? Icons.visibility_off : Icons.visibility,
+                size: 20,
+              ),
               onPressed: onToggle,
             ),
             border: OutlineInputBorder(

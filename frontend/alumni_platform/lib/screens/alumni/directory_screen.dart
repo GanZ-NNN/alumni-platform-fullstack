@@ -80,19 +80,22 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   Future<void> _launchWhatsApp(String? phone) async {
     if (phone == null || phone.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ບໍ່ມີເບີໂທລະສັບຕິດຕໍ່.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('ບໍ່ມີເບີໂທລະສັບຕິດຕໍ່.')));
       }
       return;
     }
-    
+
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
     final url = Uri.parse("https://wa.me/$cleanPhone");
 
     try {
       if (await launcher.canLaunchUrl(url)) {
-        await launcher.launchUrl(url, mode: launcher.LaunchMode.externalApplication);
+        await launcher.launchUrl(
+          url,
+          mode: launcher.LaunchMode.externalApplication,
+        );
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -102,9 +105,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('ເກີດຂໍ້ຜິດພາດ: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('ເກີດຂໍ້ຜິດພາດ: $e')));
       }
     }
   }
@@ -141,80 +144,81 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             ),
           ),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _alumniList.isEmpty
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _alumniList.isEmpty
                     ? const Center(child: Text('ບໍ່ພົບຂໍ້ມູນສິດເກົ່າ'))
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 15),
-                        itemCount: _alumniList.length,
-                        itemBuilder: (context, index) {
-                          final user = _alumniList[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: Colors.grey[200]!),
-                            ),
-                            child: ListTile(
-                              onTap: () => _launchWhatsApp(user.phoneNumber),
-                              contentPadding: const EdgeInsets.all(15),
-                              leading: Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: ImageHelper.networkImage(
-                                      user.profileImageUrl,
-                                      width: 60,
-                                      height: 60,
-                                    ),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      itemCount: _alumniList.length,
+                      itemBuilder: (context, index) {
+                        final user = _alumniList[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(color: Colors.grey[200]!),
+                          ),
+                          child: ListTile(
+                            onTap: () => _launchWhatsApp(user.phoneNumber),
+                            contentPadding: const EdgeInsets.all(15),
+                            leading: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: ImageHelper.networkImage(
+                                    user.profileImageUrl,
+                                    width: 60,
+                                    height: 60,
                                   ),
-                                  const Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Icon(
-                                      Icons.check_circle,
-                                      color: Colors.blue,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              title: Text(
-                                '${user.firstName} ${user.lastName ?? ''}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Google Sans',
                                 ),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${user.major} • ລຸ້ນ ${user.graduationYear}',
-                                    style: const TextStyle(
-                                      fontFamily: 'Google Sans',
-                                    ),
+                                const Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Icon(
+                                    Icons.check_circle,
+                                    color: Colors.blue,
+                                    size: 20,
                                   ),
-                                  Text(
-                                    user.jobPosition ?? 'Alumni',
-                                    style: const TextStyle(
-                                      color: Colors.blueGrey,
-                                      fontSize: 12,
-                                      fontFamily: 'Google Sans',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              trailing: const Icon(
-                                Icons.message_outlined,
-                                color: Color(0xFF1A56BE),
+                                ),
+                              ],
+                            ),
+                            title: Text(
+                              '${user.firstName} ${user.lastName ?? ''}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Google Sans',
                               ),
                             ),
-                          );
-                        },
-                      ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${user.major} • ລຸ້ນ ${user.graduationYear}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Google Sans',
+                                  ),
+                                ),
+                                Text(
+                                  user.jobPosition ?? 'Alumni',
+                                  style: const TextStyle(
+                                    color: Colors.blueGrey,
+                                    fontSize: 12,
+                                    fontFamily: 'Google Sans',
+                                  ),
+                                ),
+                              ],
+                            ),
+                            trailing: const Icon(
+                              Icons.message_outlined,
+                              color: Color(0xFF1A56BE),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),
@@ -327,12 +331,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             color: Colors.white,
             size: 28,
           ),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const NotificationListScreen(),
-            ),
-          ),
+          onPressed:
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationListScreen(),
+                ),
+              ),
         ),
         IconButton(
           icon: const Icon(Icons.logout, color: Colors.white, size: 24),
@@ -372,12 +377,13 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
             fontSize: 13,
           ),
           onChanged: onChanged,
-          items: items.map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
+          items:
+              items.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
         ),
       ),
     );

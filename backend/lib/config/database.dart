@@ -56,30 +56,59 @@ class DatabaseConfig {
     ''');
 
     // Ensure newer columns exist (for existing databases)
-    final userCols = ['gender', 'dob', 'student_id', 'phone', 'major', 'graduation_year', 'phone_number', 'profile_image_url'];
+    final userCols = [
+      'gender',
+      'dob',
+      'student_id',
+      'phone',
+      'major',
+      'graduation_year',
+      'phone_number',
+      'profile_image_url',
+    ];
     for (final col in userCols) {
       try {
-        await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS $col TEXT');
+        await _connection.execute(
+          'ALTER TABLE users ADD COLUMN IF NOT EXISTS $col TEXT',
+        );
         if (col == 'graduation_year') {
-          await _connection.execute('ALTER TABLE users ALTER COLUMN graduation_year TYPE INT USING graduation_year::integer');
+          await _connection.execute(
+            'ALTER TABLE users ALTER COLUMN graduation_year TYPE INT USING graduation_year::integer',
+          );
         }
         if (col == 'dob') {
-          await _connection.execute('ALTER TABLE users ALTER COLUMN dob TYPE DATE USING dob::date');
+          await _connection.execute(
+            'ALTER TABLE users ALTER COLUMN dob TYPE DATE USING dob::date',
+          );
         }
       } catch (_) {
         // Column might already exist or have incompatible type changes handled elsewhere
       }
     }
-    
+
     // Add columns that might be missing in older versions
     try {
-      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS education_level TEXT');
-      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS job_title TEXT');
-      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS company_name TEXT');
-      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS industry TEXT');
-      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS workplace TEXT');
-      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS job_position TEXT');
-      await _connection.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS work_status TEXT DEFAULT \'Unemployed\'');
+      await _connection.execute(
+        'ALTER TABLE users ADD COLUMN IF NOT EXISTS education_level TEXT',
+      );
+      await _connection.execute(
+        'ALTER TABLE users ADD COLUMN IF NOT EXISTS job_title TEXT',
+      );
+      await _connection.execute(
+        'ALTER TABLE users ADD COLUMN IF NOT EXISTS company_name TEXT',
+      );
+      await _connection.execute(
+        'ALTER TABLE users ADD COLUMN IF NOT EXISTS industry TEXT',
+      );
+      await _connection.execute(
+        'ALTER TABLE users ADD COLUMN IF NOT EXISTS workplace TEXT',
+      );
+      await _connection.execute(
+        'ALTER TABLE users ADD COLUMN IF NOT EXISTS job_position TEXT',
+      );
+      await _connection.execute(
+        'ALTER TABLE users ADD COLUMN IF NOT EXISTS work_status TEXT DEFAULT \'Unemployed\'',
+      );
     } catch (_) {}
 
     await _connection.execute('''
@@ -137,9 +166,13 @@ class DatabaseConfig {
 
   static Future<void> _ensureDefaultAdmin() async {
     // Seed sample graduated students for testing
-    final graduatedCount = await _connection.execute('SELECT COUNT(*) FROM graduated_students');
+    final graduatedCount = await _connection.execute(
+      'SELECT COUNT(*) FROM graduated_students',
+    );
     if ((graduatedCount.first[0] as int) == 0) {
-      await _connection.execute("INSERT INTO graduated_students (student_id, full_name, graduation_year) VALUES ('STD001', 'John Doe', 2023), ('STD002', 'Jane Smith', 2022)");
+      await _connection.execute(
+        "INSERT INTO graduated_students (student_id, full_name, graduation_year) VALUES ('STD001', 'John Doe', 2023), ('STD002', 'Jane Smith', 2022)",
+      );
     }
 
     final existing = await _connection.execute(

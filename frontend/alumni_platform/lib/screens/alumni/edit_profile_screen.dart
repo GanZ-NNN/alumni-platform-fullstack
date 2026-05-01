@@ -39,8 +39,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _lastNameController = TextEditingController(text: widget.user.lastName);
     _phoneController = TextEditingController(text: widget.user.phoneNumber);
     _majorController = TextEditingController(text: widget.user.major);
-    _gradYearController = TextEditingController(text: widget.user.graduationYear);
-    _eduLevelController = TextEditingController(text: widget.user.educationLevel);
+    _gradYearController = TextEditingController(
+      text: widget.user.graduationYear,
+    );
+    _eduLevelController = TextEditingController(
+      text: widget.user.educationLevel,
+    );
     _jobTitleController = TextEditingController(text: widget.user.jobPosition);
     _companyController = TextEditingController(text: widget.user.workplace);
     _industryController = TextEditingController(text: widget.user.industry);
@@ -109,9 +113,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
       Navigator.pop(context);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update profile')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to update profile')));
     }
   }
 
@@ -125,66 +129,67 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         backgroundColor: const Color(0xFF1A56BE),
         foregroundColor: Colors.white,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionTitle('Personal Information'),
-                    _buildTextField('First Name', _firstNameController),
-                    _buildTextField('Last Name', _lastNameController),
-                    _buildTextField(
-                      'Phone Number (for WhatsApp)',
-                      _phoneController,
-                      keyboardType: TextInputType.phone,
-                      hint: 'e.g. 85620XXXXXXXX',
-                    ),
-                    if (isAlumni) ...[
-                      const SizedBox(height: 20),
-                      _buildSectionTitle('Education Background'),
-                      _buildTextField('Major', _majorController),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('Personal Information'),
+                      _buildTextField('First Name', _firstNameController),
+                      _buildTextField('Last Name', _lastNameController),
                       _buildTextField(
-                        'Graduation Year',
-                        _gradYearController,
-                        keyboardType: TextInputType.number,
+                        'Phone Number (for WhatsApp)',
+                        _phoneController,
+                        keyboardType: TextInputType.phone,
+                        hint: 'e.g. 85620XXXXXXXX',
                       ),
-                      _buildTextField('Education Level', _eduLevelController),
-                      const SizedBox(height: 20),
-                      _buildSectionTitle('Current Work'),
-                      _buildTextField('Job Title', _jobTitleController),
-                      _buildTextField('Company Name', _companyController),
-                      _buildTextField('Industry', _industryController),
+                      if (isAlumni) ...[
+                        const SizedBox(height: 20),
+                        _buildSectionTitle('Education Background'),
+                        _buildTextField('Major', _majorController),
+                        _buildTextField(
+                          'Graduation Year',
+                          _gradYearController,
+                          keyboardType: TextInputType.number,
+                        ),
+                        _buildTextField('Education Level', _eduLevelController),
+                        const SizedBox(height: 20),
+                        _buildSectionTitle('Current Work'),
+                        _buildTextField('Job Title', _jobTitleController),
+                        _buildTextField('Company Name', _companyController),
+                        _buildTextField('Industry', _industryController),
+                      ],
+                      const SizedBox(height: 40),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: ElevatedButton(
+                          onPressed: _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A56BE),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          child: const Text(
+                            'Save Changes',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                    const SizedBox(height: 40),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: _saveProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A56BE),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        child: const Text(
-                          'Save Changes',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
     );
   }
 
@@ -216,9 +221,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           filled: true,
           fillColor: Colors.grey[50],
         ),

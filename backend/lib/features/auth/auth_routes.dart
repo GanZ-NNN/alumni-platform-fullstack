@@ -17,34 +17,55 @@ class AuthRoutes {
 
     // Helper function to validate email format
     bool isValidEmail(String email) {
-      return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email);
+      return RegExp(
+        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+      ).hasMatch(email);
     }
 
     router.post('/register', (Request request) async {
       try {
         final content = await request.readAsString();
         print('📝 [Registration] Request body: $content');
-        
+
         if (content.isEmpty) {
-          return ApiResponse.error(400, code: 'EMPTY_BODY', message: 'Request body is empty');
+          return ApiResponse.error(
+            400,
+            code: 'EMPTY_BODY',
+            message: 'Request body is empty',
+          );
         }
-        
+
         Map<String, dynamic> body;
         try {
           body = jsonDecode(content);
         } catch (e) {
-          return ApiResponse.error(400, code: 'INVALID_JSON', message: 'Invalid JSON format');
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_JSON',
+            message: 'Invalid JSON format',
+          );
         }
 
         final email = body['email']?.toString().trim();
         final password = body['password']?.toString();
-        
-        if (email == null || email.isEmpty || password == null || password.isEmpty) {
-          return ApiResponse.error(400, code: 'MISSING_FIELDS', message: 'Email and password are required');
+
+        if (email == null ||
+            email.isEmpty ||
+            password == null ||
+            password.isEmpty) {
+          return ApiResponse.error(
+            400,
+            code: 'MISSING_FIELDS',
+            message: 'Email and password are required',
+          );
         }
 
         if (!isValidEmail(email)) {
-          return ApiResponse.error(400, code: 'INVALID_EMAIL', message: 'Please provide a valid email address');
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_EMAIL',
+            message: 'Please provide a valid email address',
+          );
         }
 
         print('🔍 [Registration] Checking if user exists: $email');
@@ -54,9 +75,10 @@ class AuthRoutes {
         );
 
         if (existingUser.isNotEmpty) {
-          return ApiResponse.error(409, 
-            code: 'EMAIL_ALREADY_EXISTS', 
-            message: 'This email is already registered.'
+          return ApiResponse.error(
+            409,
+            code: 'EMAIL_ALREADY_EXISTS',
+            message: 'This email is already registered.',
           );
         }
 
@@ -74,16 +96,22 @@ class AuthRoutes {
           print('🎓 [Registration] Checking graduated status for: $studentId');
           try {
             final graduatedResult = await DatabaseConfig.connection.execute(
-              Sql.named('SELECT 1 FROM graduated_students WHERE student_id = @sid LIMIT 1'),
+              Sql.named(
+                'SELECT 1 FROM graduated_students WHERE student_id = @sid LIMIT 1',
+              ),
               parameters: {'sid': studentId},
             );
 
             if (graduatedResult.isNotEmpty) {
               role = 'alumni';
               status = 'pending';
-              print('✅ [Registration] Found in graduated list. Role: alumni, Status: pending');
+              print(
+                '✅ [Registration] Found in graduated list. Role: alumni, Status: pending',
+              );
             } else {
-              print('ℹ️ [Registration] Not in graduated list. Keeping as guest/active');
+              print(
+                'ℹ️ [Registration] Not in graduated list. Keeping as guest/active',
+              );
             }
           } catch (e) {
             print('⚠️ [Registration] Error checking graduated_students: $e');
@@ -103,7 +131,7 @@ class AuthRoutes {
         }
 
         print('🔨 [Registration] Final step: Inserting user into DB...');
-        
+
         await DatabaseConfig.connection.execute(
           Sql.named(
             'INSERT INTO users (email, password, first_name, last_name, gender, dob, student_id, phone, role, status, created_at) '
@@ -128,9 +156,11 @@ class AuthRoutes {
         return ApiResponse.success(
           200,
           data: {
-            'message': status == 'active' ? 'Registration successful' : 'Registration submitted. Waiting for admin approval.',
+            'message': status == 'active'
+                ? 'Registration successful'
+                : 'Registration submitted. Waiting for admin approval.',
             'status': status,
-            'role': role
+            'role': role,
           },
         );
       } catch (e, stackTrace) {
@@ -153,7 +183,11 @@ class AuthRoutes {
         final String? password = body['password'];
 
         if (email == null || password == null) {
-          return ApiResponse.error(400, code: 'MISSING_FIELDS', message: 'Email and password are required');
+          return ApiResponse.error(
+            400,
+            code: 'MISSING_FIELDS',
+            message: 'Email and password are required',
+          );
         }
 
         // ຄົ້ນຫາ User ໂດຍບໍ່ສົນໃຈໂຕພິມນ້ອຍ-ໃຫຍ່
@@ -165,14 +199,22 @@ class AuthRoutes {
         );
 
         if (result.isEmpty) {
-          return ApiResponse.error(401, code: 'INVALID_CREDENTIALS', message: 'Invalid credentials.');
+          return ApiResponse.error(
+            401,
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid credentials.',
+          );
         }
 
         final row = result.first;
         final hashed = row[2].toString();
 
         if (!DBCrypt().checkpw(password, hashed)) {
-          return ApiResponse.error(401, code: 'INVALID_CREDENTIALS', message: 'Invalid credentials.');
+          return ApiResponse.error(
+            401,
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid credentials.',
+          );
         }
 
         final userId = row[0].toString();
@@ -181,10 +223,17 @@ class AuthRoutes {
         final String fullName = '${row[4] ?? ''} ${row[5] ?? ''}'.trim();
 
         if (status != 'active' && role != 'admin') {
-          return ApiResponse.error(403, code: 'ACCOUNT_PENDING', message: 'Your account is pending approval.');
+          return ApiResponse.error(
+            403,
+            code: 'ACCOUNT_PENDING',
+            message: 'Your account is pending approval.',
+          );
         }
 
-        final accessToken = JwtService.generateToken({'userId': userId, 'role': role});
+        final accessToken = JwtService.generateToken({
+          'userId': userId,
+          'role': role,
+        });
         final refreshToken = JwtService.generateRefreshToken(userId);
 
         return ApiResponse.success(
@@ -203,70 +252,92 @@ class AuthRoutes {
             },
           },
         );
-        } catch (e) {
+      } catch (e) {
         return ApiResponse.error(
           500,
           code: 'LOGIN_FAILED',
           message: 'Error during login process.',
           details: {'reason': e.toString()},
         );
-        }
-        });
+      }
+    });
 
-        // Public Stats for Dashboard (Accessible by all logged-in users)
-        router.get('/public-stats', (Request request) async {
-        try {
-        final usersCount = await DatabaseConfig.connection.execute('SELECT COUNT(*) FROM users');
-        final postsCount = await DatabaseConfig.connection.execute('SELECT COUNT(*) FROM posts');
-        final jobsCount = await DatabaseConfig.connection.execute('SELECT COUNT(*) FROM jobs');
+    // Public Stats for Dashboard (Accessible by all logged-in users)
+    router.get('/public-stats', (Request request) async {
+      try {
+        final usersCount = await DatabaseConfig.connection.execute(
+          'SELECT COUNT(*) FROM users',
+        );
+        final postsCount = await DatabaseConfig.connection.execute(
+          'SELECT COUNT(*) FROM posts',
+        );
+        final jobsCount = await DatabaseConfig.connection.execute(
+          'SELECT COUNT(*) FROM jobs',
+        );
 
-        return ApiResponse.success(200, data: {
-          'totalAlumni': (usersCount.first[0] as int?) ?? 0,
-          'totalPosts': (postsCount.first[0] as int?) ?? 0,
-          'totalJobs': (jobsCount.first[0] as int?) ?? 0,
-        });
-        } catch (e) {
-        return ApiResponse.error(500, code: 'STATS_ERROR', message: 'Failed to fetch public stats');
-        }
-        });
+        return ApiResponse.success(
+          200,
+          data: {
+            'totalAlumni': (usersCount.first[0] as int?) ?? 0,
+            'totalPosts': (postsCount.first[0] as int?) ?? 0,
+            'totalJobs': (jobsCount.first[0] as int?) ?? 0,
+          },
+        );
+      } catch (e) {
+        return ApiResponse.error(
+          500,
+          code: 'STATS_ERROR',
+          message: 'Failed to fetch public stats',
+        );
+      }
+    });
 
     // --- ສ່ວນທີ່ເພີ່ມໃໝ່: Profile & Admin Logic ---
 
     // 1. ດຶງຂໍ້ມູນ Profile ຂອງຕົນເອງ
     router.get('/me', (Request request) async {
       final userId = request.context['userId'];
-      
+
       final result = await DatabaseConfig.connection.execute(
-        Sql.named('SELECT id, email, first_name, last_name, gender, dob, student_id, phone, role, status, '
-            'graduation_year, education_level, job_title, company_name, industry '
-            'FROM users WHERE id = @id'),
+        Sql.named(
+          'SELECT id, email, first_name, last_name, gender, dob, student_id, phone, role, status, '
+          'graduation_year, education_level, job_title, company_name, industry '
+          'FROM users WHERE id = @id',
+        ),
         parameters: {'id': userId},
       );
 
       if (result.isEmpty) {
-        return ApiResponse.error(404, code: 'USER_NOT_FOUND', message: 'User not found');
+        return ApiResponse.error(
+          404,
+          code: 'USER_NOT_FOUND',
+          message: 'User not found',
+        );
       }
 
       final row = result.first;
-      return ApiResponse.success(200, data: {
-        'id': row[0],
-        'email': row[1],
-        'firstName': row[2],
-        'lastName': row[3],
-        'gender': row[4],
-        'dob': row[5]?.toString(),
-        'studentId': row[6],
-        'phone': row[7],
-        'role': row[8],
-        'status': row[9],
-        'alumniDetails': {
-          'graduationYear': row[10],
-          'educationLevel': row[11],
-          'jobTitle': row[12],
-          'companyName': row[13],
-          'industry': row[14],
-        }
-      });
+      return ApiResponse.success(
+        200,
+        data: {
+          'id': row[0],
+          'email': row[1],
+          'firstName': row[2],
+          'lastName': row[3],
+          'gender': row[4],
+          'dob': row[5]?.toString(),
+          'studentId': row[6],
+          'phone': row[7],
+          'role': row[8],
+          'status': row[9],
+          'alumniDetails': {
+            'graduationYear': row[10],
+            'educationLevel': row[11],
+            'jobTitle': row[12],
+            'companyName': row[13],
+            'industry': row[14],
+          },
+        },
+      );
     });
 
     // 2. ອັບເດດຂໍ້ມູນ Profile (Alumni ມາຕື່ມຂໍ້ມູນທີຫຼັງ)
@@ -301,9 +372,17 @@ class AuthRoutes {
           },
         );
 
-        return ApiResponse.success(200, message: 'Profile updated successfully');
+        return ApiResponse.success(
+          200,
+          message: 'Profile updated successfully',
+        );
       } catch (e) {
-        return ApiResponse.error(500, code: 'UPDATE_PROFILE_FAILED', message: 'Update failed', details: {'reason': e.toString()});
+        return ApiResponse.error(
+          500,
+          code: 'UPDATE_PROFILE_FAILED',
+          message: 'Update failed',
+          details: {'reason': e.toString()},
+        );
       }
     });
 
@@ -311,17 +390,27 @@ class AuthRoutes {
     router.post('/admin/approve/<id>', (Request request, String id) async {
       final adminRole = request.context['role'];
       if (adminRole != 'admin') {
-        return ApiResponse.error(403, code: 'FORBIDDEN', message: 'Only admins can perform this action');
+        return ApiResponse.error(
+          403,
+          code: 'FORBIDDEN',
+          message: 'Only admins can perform this action',
+        );
       }
 
       try {
         final result = await DatabaseConfig.connection.execute(
-          Sql.named('UPDATE users SET status = @status WHERE id = @id RETURNING email, first_name'),
+          Sql.named(
+            'UPDATE users SET status = @status WHERE id = @id RETURNING email, first_name',
+          ),
           parameters: {'status': 'active', 'id': id},
         );
 
         if (result.isEmpty) {
-          return ApiResponse.error(404, code: 'USER_NOT_FOUND', message: 'User not found');
+          return ApiResponse.error(
+            404,
+            code: 'USER_NOT_FOUND',
+            message: 'User not found',
+          );
         }
 
         final userEmail = result.first[0].toString();
@@ -330,7 +419,11 @@ class AuthRoutes {
 
         return ApiResponse.success(200, message: 'User approved successfully');
       } catch (e) {
-        return ApiResponse.error(500, code: 'APPROVAL_FAILED', message: 'Approval failed');
+        return ApiResponse.error(
+          500,
+          code: 'APPROVAL_FAILED',
+          message: 'Approval failed',
+        );
       }
     });
 
@@ -342,8 +435,14 @@ class AuthRoutes {
         final String? oldPassword = body['oldPassword'];
         final String? newPassword = body['newPassword'];
 
-        if (oldPassword == null || newPassword == null || newPassword.length < 6) {
-          return ApiResponse.error(400, code: 'INVALID_INPUT', message: 'Old and valid new password are required');
+        if (oldPassword == null ||
+            newPassword == null ||
+            newPassword.length < 6) {
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_INPUT',
+            message: 'Old and valid new password are required',
+          );
         }
 
         // Check old password
@@ -353,27 +452,39 @@ class AuthRoutes {
         );
 
         if (result.isEmpty) {
-          return ApiResponse.error(404, code: 'USER_NOT_FOUND', message: 'User not found');
+          return ApiResponse.error(
+            404,
+            code: 'USER_NOT_FOUND',
+            message: 'User not found',
+          );
         }
 
         final hashed = result.first[0].toString();
         if (!DBCrypt().checkpw(oldPassword, hashed)) {
-          return ApiResponse.error(401, code: 'INVALID_CREDENTIALS', message: 'Invalid old password');
+          return ApiResponse.error(
+            401,
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid old password',
+          );
         }
 
         // Update to new password
         final newHashed = DBCrypt().hashpw(newPassword, DBCrypt().gensalt());
         await DatabaseConfig.connection.execute(
           Sql.named('UPDATE users SET password = @password WHERE id = @id'),
-          parameters: {
-            'password': newHashed,
-            'id': userId,
-          },
+          parameters: {'password': newHashed, 'id': userId},
         );
 
-        return ApiResponse.success(200, message: 'Password changed successfully');
+        return ApiResponse.success(
+          200,
+          message: 'Password changed successfully',
+        );
       } catch (e) {
-        return ApiResponse.error(500, code: 'CHANGE_PASSWORD_FAILED', message: 'Error changing password');
+        return ApiResponse.error(
+          500,
+          code: 'CHANGE_PASSWORD_FAILED',
+          message: 'Error changing password',
+        );
       }
     });
 
@@ -386,7 +497,11 @@ class AuthRoutes {
         final email = body['email']?.toString().trim();
 
         if (email == null || email.isEmpty) {
-          return ApiResponse.error(400, code: 'INVALID_INPUT', message: 'Email is required');
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_INPUT',
+            message: 'Email is required',
+          );
         }
 
         // Check if user exists
@@ -396,7 +511,11 @@ class AuthRoutes {
         );
 
         if (userResult.isEmpty) {
-          return ApiResponse.error(404, code: 'USER_NOT_FOUND', message: 'User with this email not found');
+          return ApiResponse.error(
+            404,
+            code: 'USER_NOT_FOUND',
+            message: 'User with this email not found',
+          );
         }
 
         // Generate 4-digit code (Requested by user)
@@ -410,22 +529,29 @@ class AuthRoutes {
             VALUES (@email, @code, @expiresAt)
             ON CONFLICT (email) DO UPDATE SET code = @code, expires_at = @expiresAt
           '''),
-          parameters: {
-            'email': email,
-            'code': code,
-            'expiresAt': expiresAt,
-          },
+          parameters: {'email': email, 'code': code, 'expiresAt': expiresAt},
         );
 
         // Send Email
         final sent = await EmailService.sendPasswordResetCode(email, code);
         if (!sent) {
-          return ApiResponse.error(500, code: 'EMAIL_FAILED', message: 'Failed to send reset code');
+          return ApiResponse.error(
+            500,
+            code: 'EMAIL_FAILED',
+            message: 'Failed to send reset code',
+          );
         }
 
-        return ApiResponse.success(200, message: 'Reset code sent to your email');
+        return ApiResponse.success(
+          200,
+          message: 'Reset code sent to your email',
+        );
       } catch (e) {
-        return ApiResponse.error(500, code: 'FORGOT_PASSWORD_FAILED', message: 'Error processing request');
+        return ApiResponse.error(
+          500,
+          code: 'FORGOT_PASSWORD_FAILED',
+          message: 'Error processing request',
+        );
       }
     });
 
@@ -437,39 +563,59 @@ class AuthRoutes {
         final code = body['code']?.toString().trim();
         final newPassword = body['newPassword']?.toString();
 
-        if (email == null || code == null || newPassword == null || newPassword.length < 6) {
-          return ApiResponse.error(400, code: 'INVALID_INPUT', message: 'Email, code, and valid new password are required');
+        if (email == null ||
+            code == null ||
+            newPassword == null ||
+            newPassword.length < 6) {
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_INPUT',
+            message: 'Email, code, and valid new password are required',
+          );
         }
 
         // Verify code
         final resetResult = await DatabaseConfig.connection.execute(
-          Sql.named('SELECT code, expires_at FROM password_resets WHERE email = @email'),
+          Sql.named(
+            'SELECT code, expires_at FROM password_resets WHERE email = @email',
+          ),
           parameters: {'email': email},
         );
 
         if (resetResult.isEmpty) {
-          return ApiResponse.error(400, code: 'INVALID_CODE', message: 'Invalid reset code or email');
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_CODE',
+            message: 'Invalid reset code or email',
+          );
         }
 
         final dbCode = resetResult.first[0].toString();
         final expiresAt = resetResult.first[1] as DateTime;
 
         if (dbCode != code) {
-          return ApiResponse.error(400, code: 'INVALID_CODE', message: 'Invalid reset code');
+          return ApiResponse.error(
+            400,
+            code: 'INVALID_CODE',
+            message: 'Invalid reset code',
+          );
         }
 
         if (DateTime.now().isAfter(expiresAt)) {
-          return ApiResponse.error(400, code: 'CODE_EXPIRED', message: 'Reset code has expired');
+          return ApiResponse.error(
+            400,
+            code: 'CODE_EXPIRED',
+            message: 'Reset code has expired',
+          );
         }
 
         // Update User Password
         final hashed = DBCrypt().hashpw(newPassword, DBCrypt().gensalt());
         await DatabaseConfig.connection.execute(
-          Sql.named('UPDATE users SET password = @password WHERE email = @email'),
-          parameters: {
-            'password': hashed,
-            'email': email,
-          },
+          Sql.named(
+            'UPDATE users SET password = @password WHERE email = @email',
+          ),
+          parameters: {'password': hashed, 'email': email},
         );
 
         // Clean up reset code
@@ -478,21 +624,26 @@ class AuthRoutes {
           parameters: {'email': email},
         );
 
-        return ApiResponse.success(200, message: 'Password has been reset successfully');
+        return ApiResponse.success(
+          200,
+          message: 'Password has been reset successfully',
+        );
       } catch (e) {
-        return ApiResponse.error(500, code: 'RESET_PASSWORD_FAILED', message: 'Error resetting password');
+        return ApiResponse.error(
+          500,
+          code: 'RESET_PASSWORD_FAILED',
+          message: 'Error resetting password',
+        );
       }
     });
 
-    final pipeline = Pipeline()
-        .addMiddleware(rateLimitMiddleware(
-          maxRequests: AppConfig.authRateLimitMaxRequests,
-          window: Duration(seconds: AppConfig.authRateLimitWindowSeconds),
-        ));
-
-    return Router()..mount(
-      '/',
-      pipeline.addHandler(router.call),
+    final pipeline = Pipeline().addMiddleware(
+      rateLimitMiddleware(
+        maxRequests: AppConfig.authRateLimitMaxRequests,
+        window: Duration(seconds: AppConfig.authRateLimitWindowSeconds),
+      ),
     );
+
+    return Router()..mount('/', pipeline.addHandler(router.call));
   }
 }

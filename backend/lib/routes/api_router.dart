@@ -56,7 +56,8 @@ class ApiRouter {
       final major = params['major'] ?? '';
       final year = params['year'] ?? '';
 
-      final result = await DatabaseConfig.connection.execute(Sql.named('''
+      final result = await DatabaseConfig.connection.execute(
+        Sql.named('''
         SELECT id, email, first_name, last_name, role, status, major, graduation_year, phone_number, profile_image_url, job_position, workplace, work_status
         FROM users
         WHERE role = 'alumni' AND status = 'active'
@@ -64,11 +65,9 @@ class ApiRouter {
         AND (major ILIKE @major OR @major = '')
         AND (graduation_year::text ILIKE @year OR @year = '')
         ORDER BY first_name ASC
-      '''), parameters: {
-        'name': '%$name%',
-        'major': major,
-        'year': year,
-      });
+      '''),
+        parameters: {'name': '%$name%', 'major': major, 'year': year},
+      );
 
       final alumni = result.map((r) {
         return {

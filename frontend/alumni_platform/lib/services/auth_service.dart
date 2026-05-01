@@ -166,7 +166,11 @@ class AuthService {
     return false;
   }
 
-  Future<bool> resetPassword(String email, String code, String newPassword) async {
+  Future<bool> resetPassword(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
     try {
       final response = await _apiClient.post(
         '/auth/reset-password',

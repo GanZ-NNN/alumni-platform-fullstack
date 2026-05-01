@@ -79,7 +79,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dobCtrl.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        _dobCtrl.text =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -120,11 +121,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildRoleCard('Current Student', 'guest', Icons.school),
+                    child: _buildRoleCard(
+                      'Current Student',
+                      'guest',
+                      Icons.school,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildRoleCard('Graduate', 'alumni', Icons.workspace_premium),
+                    child: _buildRoleCard(
+                      'Graduate',
+                      'alumni',
+                      Icons.workspace_premium,
+                    ),
                   ),
                 ],
               ),
@@ -156,22 +165,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
 
               _buildLabel('Email Address *'),
-              _buildTextField(_emailCtrl, 'your@email.com', icon: Icons.email_outlined),
+              _buildTextField(
+                _emailCtrl,
+                'your@email.com',
+                icon: Icons.email_outlined,
+              ),
               const SizedBox(height: 20),
 
               _buildLabel('Password *'),
-              _buildTextField(_passCtrl, '••••••••', icon: Icons.lock_outline, isPassword: true),
+              _buildTextField(
+                _passCtrl,
+                '••••••••',
+                icon: Icons.lock_outline,
+                isPassword: true,
+              ),
               const SizedBox(height: 20),
 
               _buildLabel('Gender *'),
               DropdownButtonFormField<String>(
                 value: _gender,
-                decoration: _inputDecoration('Select Gender', Icons.person_outline),
-                items: ['Male', 'Female', 'Other']
-                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                    .toList(),
+                decoration: _inputDecoration(
+                  'Select Gender',
+                  Icons.person_outline,
+                ),
+                items:
+                    ['Male', 'Female', 'Other']
+                        .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                        .toList(),
                 onChanged: (val) => setState(() => _gender = val!),
-                validator: (val) => val == null || val.isEmpty ? 'Required field' : null,
+                validator:
+                    (val) =>
+                        val == null || val.isEmpty ? 'Required field' : null,
               ),
               const SizedBox(height: 20),
 
@@ -180,13 +204,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _dobCtrl,
                 readOnly: true,
                 onTap: () => _selectDate(context),
-                validator: (val) => val == null || val.isEmpty ? 'Required field' : null,
-                decoration: _inputDecoration('Select Date', Icons.calendar_today_outlined),
+                validator:
+                    (val) =>
+                        val == null || val.isEmpty ? 'Required field' : null,
+                decoration: _inputDecoration(
+                  'Select Date',
+                  Icons.calendar_today_outlined,
+                ),
               ),
               const SizedBox(height: 20),
 
               _buildLabel('Student ID *'),
-              _buildTextField(_studentIdCtrl, 'Enter your ID', icon: Icons.badge_outlined),
+              _buildTextField(
+                _studentIdCtrl,
+                'Enter your ID',
+                icon: Icons.badge_outlined,
+              ),
 
               const SizedBox(height: 40),
               SizedBox(
@@ -197,14 +230,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     backgroundColor: const Color(0xFF1A56BE),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: _isRegistering
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Register',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                  child:
+                      _isRegistering
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                            'Register',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -225,15 +264,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
           color: isSelected ? const Color(0xFF1A56BE) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFF1A56BE) : const Color(0xFFE2E8F0),
+            color:
+                isSelected ? const Color(0xFF1A56BE) : const Color(0xFFE2E8F0),
           ),
-          boxShadow: isSelected
-              ? [BoxShadow(color: const Color(0xFF1A56BE).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
-              : null,
+          boxShadow:
+              isSelected
+                  ? [
+                    BoxShadow(
+                      color: const Color(0xFF1A56BE).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                  : null,
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? Colors.white : const Color(0xFF64748B)),
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : const Color(0xFF64748B),
+            ),
             const SizedBox(height: 8),
             Text(
               title,
@@ -249,12 +299,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildLabel(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(
-          text,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF1E293B),
+      ),
+    ),
+  );
 
   InputDecoration _inputDecoration(String hint, [IconData? icon]) {
     return InputDecoration(
@@ -285,8 +338,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController ctrl, String hint,
-      {IconData? icon, bool isPassword = false}) {
+  Widget _buildTextField(
+    TextEditingController ctrl,
+    String hint, {
+    IconData? icon,
+    bool isPassword = false,
+  }) {
     return TextFormField(
       controller: ctrl,
       obscureText: isPassword,

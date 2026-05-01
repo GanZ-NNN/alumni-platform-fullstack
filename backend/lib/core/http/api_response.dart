@@ -25,7 +25,7 @@ class ApiResponse {
   }) {
     return json(statusCode, {
       'success': true,
-      if (message != null) 'message': message,
+      'message': ?message,
       'data': data ?? <String, dynamic>{},
     }, headers: headers);
   }
@@ -37,13 +37,15 @@ class ApiResponse {
     Map<String, dynamic>? details,
     Map<String, String>? headers,
   }) {
-    print('🚨 [ApiResponse.error] status=$statusCode code=$code message=$message details=$details');
+    print(
+      '🚨 [ApiResponse.error] status=$statusCode code=$code message=$message details=$details',
+    );
     return json(statusCode, {
       'success': false,
       'error': {
         'code': code,
         'message': message,
-        if (details != null) ...{'details': details},
+        'details':? details,
       },
     }, headers: headers);
   }

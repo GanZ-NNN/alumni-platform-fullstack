@@ -38,14 +38,16 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
     setState(() => _isLoading = true);
     try {
       final bool isAdmin = widget.user.role == 'admin';
-      
-      final Map<String, dynamic>? statsData = isAdmin 
-          ? await _adminService.getDashboardStats() 
-          : await _adminService.getPublicStats();
-          
-      final List<dynamic> majorsData = isAdmin 
-          ? await _adminService.getMajorReports() 
-          : []; // Non-admins don't get major reports for now
+
+      final Map<String, dynamic>? statsData =
+          isAdmin
+              ? await _adminService.getDashboardStats()
+              : await _adminService.getPublicStats();
+
+      final List<dynamic> majorsData =
+          isAdmin
+              ? await _adminService.getMajorReports()
+              : []; // Non-admins don't get major reports for now
 
       final postsData = await _postService.getPosts();
 
@@ -75,7 +77,10 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
             ),
             title: const Text(
               'ສ້າງໂພສໃໝ່',
-              style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Google Sans'),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Google Sans',
+              ),
             ),
             content: SizedBox(
               width: double.maxFinite,
@@ -90,12 +95,18 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
                         style: const TextStyle(fontFamily: 'Google Sans'),
                         decoration: InputDecoration(
                           labelText: 'ຫົວຂໍ້',
-                          labelStyle: const TextStyle(fontFamily: 'Google Sans'),
+                          labelStyle: const TextStyle(
+                            fontFamily: 'Google Sans',
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        validator: (v) => (v == null || v.isEmpty) ? 'ກະລຸນາປ້ອນຫົວຂໍ້' : null,
+                        validator:
+                            (v) =>
+                                (v == null || v.isEmpty)
+                                    ? 'ກະລຸນາປ້ອນຫົວຂໍ້'
+                                    : null,
                       ),
                       const SizedBox(height: 15),
                       TextFormField(
@@ -104,27 +115,53 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
                         style: const TextStyle(fontFamily: 'Google Sans'),
                         decoration: InputDecoration(
                           labelText: 'ເນື້ອຫາ',
-                          labelStyle: const TextStyle(fontFamily: 'Google Sans'),
+                          labelStyle: const TextStyle(
+                            fontFamily: 'Google Sans',
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        validator: (v) => (v == null || v.isEmpty) ? 'ກະລຸນາປ້ອນເນື້ອຫາ' : null,
+                        validator:
+                            (v) =>
+                                (v == null || v.isEmpty)
+                                    ? 'ກະລຸນາປ້ອນເນື້ອຫາ'
+                                    : null,
                       ),
                       const SizedBox(height: 15),
                       DropdownButtonFormField<String>(
                         value: 'news',
                         decoration: InputDecoration(
                           labelText: 'ປະເພດ',
-                          labelStyle: const TextStyle(fontFamily: 'Google Sans'),
+                          labelStyle: const TextStyle(
+                            fontFamily: 'Google Sans',
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         items: const [
-                          DropdownMenuItem(value: 'news', child: Text('ຂ່າວສານ', style: TextStyle(fontFamily: 'Google Sans'))),
-                          DropdownMenuItem(value: 'event', child: Text('ກິດຈະກຳ', style: TextStyle(fontFamily: 'Google Sans'))),
-                          DropdownMenuItem(value: 'success_story', child: Text('ເລື່ອງລາວຄວາມສຳເລັດ', style: TextStyle(fontFamily: 'Google Sans'))),
+                          DropdownMenuItem(
+                            value: 'news',
+                            child: Text(
+                              'ຂ່າວສານ',
+                              style: TextStyle(fontFamily: 'Google Sans'),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'event',
+                            child: Text(
+                              'ກິດຈະກຳ',
+                              style: TextStyle(fontFamily: 'Google Sans'),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'success_story',
+                            child: Text(
+                              'ເລື່ອງລາວຄວາມສຳເລັດ',
+                              style: TextStyle(fontFamily: 'Google Sans'),
+                            ),
+                          ),
                         ],
                         onChanged: (v) => typeController.text = v ?? 'news',
                       ),
@@ -136,7 +173,13 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('ຍົກເລີກ', style: TextStyle(color: Colors.grey, fontFamily: 'Google Sans')),
+                child: const Text(
+                  'ຍົກເລີກ',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontFamily: 'Google Sans',
+                  ),
+                ),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -154,14 +197,24 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
                       _loadAllData();
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('ສ້າງໂພສສຳເລັດ', style: TextStyle(fontFamily: 'Google Sans'))),
+                          const SnackBar(
+                            content: Text(
+                              'ສ້າງໂພສສຳເລັດ',
+                              style: TextStyle(fontFamily: 'Google Sans'),
+                            ),
+                          ),
                         );
                       }
                     } else {
                       setState(() => _isLoading = false);
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('ເກີດຂໍ້ຜິດພາດໃນການສ້າງໂພສ', style: TextStyle(fontFamily: 'Google Sans'))),
+                          const SnackBar(
+                            content: Text(
+                              'ເກີດຂໍ້ຜິດພາດໃນການສ້າງໂພສ',
+                              style: TextStyle(fontFamily: 'Google Sans'),
+                            ),
+                          ),
                         );
                       }
                     }
@@ -174,7 +227,10 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('ໂພສ', style: TextStyle(fontFamily: 'Google Sans')),
+                child: const Text(
+                  'ໂພສ',
+                  style: TextStyle(fontFamily: 'Google Sans'),
+                ),
               ),
             ],
           ),
@@ -212,13 +268,14 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
           ),
         ),
       ),
-      floatingActionButton: widget.user.role == 'alumni' || widget.user.role == 'admin'
-          ? FloatingActionButton(
-              onPressed: _showCreatePostDialog,
-              backgroundColor: const Color(0xFF1A56BE),
-              child: const Icon(Icons.edit, color: Colors.white),
-            )
-          : null,
+      floatingActionButton:
+          widget.user.role == 'alumni' || widget.user.role == 'admin'
+              ? FloatingActionButton(
+                onPressed: _showCreatePostDialog,
+                backgroundColor: const Color(0xFF1A56BE),
+                child: const Icon(Icons.edit, color: Colors.white),
+              )
+              : null,
     );
   }
 
@@ -427,18 +484,25 @@ class _AlumniDashboardPageState extends State<AlumniDashboardPage> {
                     e.createdAt.substring(0, 10),
                     style: const TextStyle(fontFamily: 'Google Sans'),
                   ),
-                  trailing: widget.user.role == 'guest' 
-                    ? const Icon(Icons.chevron_right)
-                    : ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A56BE),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                          textStyle: const TextStyle(fontSize: 12, fontFamily: 'Google Sans'),
-                        ),
-                        child: const Text('ລົງທະບຽນ'),
-                      ),
+                  trailing:
+                      widget.user.role == 'guest'
+                          ? const Icon(Icons.chevron_right)
+                          : ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1A56BE),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 0,
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontFamily: 'Google Sans',
+                              ),
+                            ),
+                            child: const Text('ລົງທະບຽນ'),
+                          ),
                 ),
               )
               .toList(),
